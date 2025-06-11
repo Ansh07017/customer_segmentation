@@ -8,49 +8,275 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .nav-pills .nav-link.active {
-            background-color: #007bff;
+        :root {
+            --primary-purple: #6f42c1;
+            --light-purple: #8e67c9;
+            --dark-purple: #5a359c;
+            --gold: #ffd700;
+            --light-gold: #ffe55c;
+            --dark-gold: #ccac00;
+            --purple-gradient: linear-gradient(135deg, #6f42c1, #8e67c9);
+            --gold-gradient: linear-gradient(135deg, #ffd700, #ffe55c);
         }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaf6 100%);
+        }
+        
+        .navbar {
+            background: var(--purple-gradient) !important;
+            box-shadow: 0 2px 4px rgba(111, 66, 193, 0.3);
+        }
+        
+        .nav-pills .nav-link.active {
+            background: var(--purple-gradient);
+            border: none;
+            color: white;
+            box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+        }
+        
+        .nav-pills .nav-link {
+            color: var(--primary-purple);
+            margin-bottom: 5px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link:hover {
+            background-color: rgba(111, 66, 193, 0.1);
+            color: var(--dark-purple);
+        }
+        
         .card {
             margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
         }
+        
+        .card-header {
+            background: var(--purple-gradient);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        
         .metric-card {
             text-align: center;
             padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid var(--light-purple);
+            border-radius: 12px;
         }
+        
         .metric-value {
             font-size: 2em;
             font-weight: bold;
-            color: #007bff;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+        
         .metric-label {
-            color: #666;
+            color: var(--primary-purple);
             font-size: 0.9em;
+            font-weight: 500;
         }
+        
         .loading {
             display: none;
             text-align: center;
             padding: 20px;
         }
+        
         .plot-container {
             height: 500px;
             margin-bottom: 20px;
         }
+        
         .cluster-params {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa, #e8eaf6);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 20px;
+            border: 2px solid var(--light-purple);
         }
+        
         .insight-card {
-            border-left: 4px solid #007bff;
+            border-left: 4px solid var(--gold);
             padding: 15px;
             margin-bottom: 15px;
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #ffffff, #fffef7);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(255, 215, 0, 0.2);
         }
+        
         .table-responsive {
             max-height: 400px;
             overflow-y: auto;
+        }
+        
+        .btn-primary {
+            background: var(--purple-gradient);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(111, 66, 193, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(111, 66, 193, 0.4);
+        }
+        
+        .btn-success {
+            background: var(--gold-gradient);
+            border: none;
+            color: var(--dark-purple);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+            color: var(--dark-purple);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, var(--light-purple), var(--gold));
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #8a93a0);
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 1px solid var(--gold);
+            color: var(--dark-purple);
+            border-radius: 8px;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #e8eaf6, #c5cae9);
+            border: 1px solid var(--light-purple);
+            color: var(--dark-purple);
+            border-radius: 8px;
+        }
+        
+        .badge {
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-weight: 500;
+        }
+        
+        .bg-primary {
+            background: var(--purple-gradient) !important;
+        }
+        
+        .form-range::-webkit-slider-thumb {
+            background: var(--gold);
+        }
+        
+        .form-range::-moz-range-thumb {
+            background: var(--gold);
+            border: none;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary-purple);
+            border-color: var(--primary-purple);
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: var(--purple-gradient);
+            color: white;
+            border: none;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--primary-purple);
+            border: none;
+            margin-right: 2px;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: var(--dark-purple);
+            background-color: rgba(111, 66, 193, 0.1);
+        }
+        
+        .table-striped > tbody > tr:nth-of-type(odd) > td {
+            background-color: rgba(111, 66, 193, 0.05);
+        }
+        
+        .table th {
+            background: var(--purple-gradient);
+            color: white;
+            border: none;
+        }
+        
+        .classification-result {
+            background: linear-gradient(135deg, #ffffff, #fffef7);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.2);
+        }
+        
+        .classification-result .card-header {
+            background: var(--gold-gradient);
+            color: var(--dark-purple);
+            font-weight: 700;
+        }
+        
+        .form-control:focus {
+            border-color: var(--light-purple);
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+        }
+        
+        .form-select:focus {
+            border-color: var(--light-purple);
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+        }
+        
+        .spinner-border {
+            color: var(--primary-purple);
+        }
+        
+        /* Custom scrollbar */
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: var(--light-purple);
+            border-radius: 4px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-purple);
         }
 
     </style>
@@ -809,16 +1035,32 @@
             function displayClassificationResult(response) {
                 const result = response.prediction;
                 const content = `
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h6>Classification Result</h6>
+                    <div class="card classification-result">
+                        <div class="card-header">
+                            <h6><i class="fas fa-star"></i> Classification Result</h6>
                         </div>
                         <div class="card-body">
-                            <h4>Cluster ${result.cluster}</h4>
-                            <p><strong>Profile:</strong> ${result.profile}</p>
-                            <p><strong>Characteristics:</strong> ${result.characteristics}</p>
-                            <p><strong>Recommended Strategy:</strong> ${result.strategy}</p>
-                            <p><strong>Confidence:</strong> ${(result.confidence * 100).toFixed(1)}%</p>
+                            <div class="text-center mb-3">
+                                <h3 style="color: var(--primary-purple);">Cluster ${result.cluster}</h3>
+                                <div class="badge" style="background: var(--gold-gradient); color: var(--dark-purple); font-size: 0.9em;">
+                                    ${(result.confidence * 100).toFixed(1)}% Confidence
+                                </div>
+                            </div>
+                            <hr style="border-color: var(--gold);">
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <h6 style="color: var(--primary-purple);"><strong>Customer Profile</strong></h6>
+                                    <p style="color: var(--dark-purple); font-weight: 500;">${result.profile}</p>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <h6 style="color: var(--primary-purple);"><strong>Key Characteristics</strong></h6>
+                                    <p style="color: #333;">${result.characteristics}</p>
+                                </div>
+                                <div class="col-12">
+                                    <h6 style="color: var(--primary-purple);"><strong>Recommended Marketing Strategy</strong></h6>
+                                    <p style="color: #333; font-style: italic;">${result.strategy}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
