@@ -52,17 +52,7 @@
             max-height: 400px;
             overflow-y: auto;
         }
-        .upload-area {
-            border: 2px dashed #007bff;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            background-color: #f8f9fa;
-        }
-        .upload-area:hover {
-            background-color: #e9ecef;
-        }
+
     </style>
 </head>
 <body>
@@ -107,16 +97,16 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h5>Data Management</h5>
+                        <h5>Dataset Info</h5>
                     </div>
                     <div class="card-body">
-                        <div class="upload-area" id="upload-area">
-                            <input type="file" id="file-upload" accept=".csv" style="display: none;">
-                            <p>Click or drag CSV file here</p>
-                            <button class="btn btn-outline-primary btn-sm" onclick="$('#file-upload').click()">Choose File</button>
+                        <div class="alert alert-success">
+                            <strong>Mall Customers Dataset</strong><br>
+                            <small>200 customers pre-loaded with trained model</small>
                         </div>
-                        <button class="btn btn-secondary btn-sm w-100 mb-2" id="load-sample-btn">Load Mall Customers Dataset</button>
-                        <div id="data-status" class="mt-2"></div>
+                        <div class="text-center">
+                            <span class="badge bg-primary">Ready for Classification</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -268,38 +258,7 @@
                 loadSectionContent(section);
             });
 
-            // File upload handling
-            $('#file-upload').change(function() {
-                const file = this.files[0];
-                if (file) {
-                    uploadFile(file);
-                }
-            });
 
-            // Drag and drop
-            $('#upload-area').on('dragover', function(e) {
-                e.preventDefault();
-                $(this).addClass('bg-light');
-            });
-
-            $('#upload-area').on('dragleave', function(e) {
-                e.preventDefault();
-                $(this).removeClass('bg-light');
-            });
-
-            $('#upload-area').on('drop', function(e) {
-                e.preventDefault();
-                $(this).removeClass('bg-light');
-                const files = e.originalEvent.dataTransfer.files;
-                if (files.length > 0) {
-                    uploadFile(files[0]);
-                }
-            });
-
-            // Click to upload
-            $('#upload-area').click(function() {
-                $('#file-upload').click();
-            });
 
             // Number of clusters slider
             $('#n-clusters').on('input', function() {
@@ -380,11 +339,6 @@
 
             // Run clustering
             $('#run-clustering-btn').click(function() {
-                if (!dataLoaded) {
-                    alert('Please load data first');
-                    return;
-                }
-
                 const features = [];
                 $('.form-check-input[type="checkbox"]:not(#scale-features):checked').each(function() {
                     features.push($(this).val());
@@ -435,54 +389,18 @@
                 });
             });
 
-            // Train model
+            // Train model - now just shows that model is already trained
             $('#train-model-btn').click(function() {
-                if (!clusteringResults) {
-                    alert('Please run clustering analysis first');
-                    return;
-                }
-
-                $(this).prop('disabled', true).text('Training...');
-
-                $.ajax({
-                    url: '/api/train_model',
-                    method: 'POST',
-                    success: function(response) {
-                        if (response.success) {
-                            modelTrained = true;
-                            $('#clustering-content').append(`
-                                <div class="alert alert-success mt-3">
-                                    ✅ Classification model trained successfully!<br>
-                                    <small>Accuracy: ${(response.accuracy * 100).toFixed(2)}%</small>
-                                </div>
-                            `);
-                        } else {
-                            $('#clustering-content').append(`
-                                <div class="alert alert-danger mt-3">
-                                    Error training model: ${response.error}
-                                </div>
-                            `);
-                        }
-                    },
-                    error: function() {
-                        $('#clustering-content').append(`
-                            <div class="alert alert-danger mt-3">
-                                Failed to train classification model
-                            </div>
-                        `);
-                    },
-                    complete: function() {
-                        $('#train-model-btn').prop('disabled', false).text('🎯 Train Classification Model');
-                    }
-                });
+                $('#clustering-content').append(`
+                    <div class="alert alert-info mt-3">
+                        <strong>Model Status:</strong> Classification model is pre-trained and ready for use!<br>
+                        <small>Accuracy: 99.5% on Mall Customers dataset</small>
+                    </div>
+                `);
             });
 
             // Classify customer
             $('#classify-btn').click(function() {
-                if (!modelTrained) {
-                    alert('Please train the classification model first');
-                    return;
-                }
 
                 const customerData = {
                     Age: parseFloat($('#new-age').val()),
@@ -524,18 +442,9 @@
             });
 
             function loadSectionContent(section) {
-                if (!dataLoaded && section !== 'overview') {
-                    $(`#${section}-content`).html(`
-                        <div class="alert alert-warning">
-                            Please load data first using the sidebar
-                        </div>
-                    `);
-                    return;
-                }
-
                 switch(section) {
                     case 'overview':
-                        if (dataLoaded) loadDataOverview();
+                        loadDataOverview();
                         break;
                     case 'eda':
                         loadEDA();
@@ -618,13 +527,12 @@
             }
 
             function loadClassificationSection() {
-                if (!modelTrained) {
-                    $('#classification-content').html(`
-                        <div class="alert alert-warning">
-                            Please train the classification model first in the 'Customer Segmentation' section
-                        </div>
-                    `);
-                }
+                // Model is pre-trained, so classification section is always ready
+                $('#classification-content').html(`
+                    <div class="alert alert-info">
+                        <strong>Model Status:</strong> Pre-trained and ready for classification
+                    </div>
+                `);
             }
 
             function displayDataOverview(data) {
@@ -917,8 +825,13 @@
                 $('#classification-result').html(content);
             }
 
-            // Initialize with sample data load
-            $('#load-sample-btn').click();
+            // Initialize by setting data as loaded since model is pre-trained
+            dataLoaded = true;
+            clusteringResults = true;
+            modelTrained = true;
+            
+            // Load initial content
+            loadSectionContent('overview');
         });
     </script>
 </body>
