@@ -52,7 +52,10 @@ def upload_data():
             return jsonify({'success': False, 'error': 'Only CSV files are supported'})
         
         # Read the uploaded CSV file
-        current_data = pd.read_csv(file)
+        import io
+        file_content = file.read()
+        file.seek(0)  # Reset file pointer
+        current_data = pd.read_csv(io.StringIO(file_content.decode('utf-8')))
         
         # Try to standardize column names for common customer segmentation datasets
         column_mapping = {}
