@@ -33,6 +33,91 @@ trained_model = None
 model_scaler = None
 feature_columns = None
 
+def initialize_app():
+    """Initialize the application with pre-trained model"""
+    global current_data, clustering_results, trained_model, model_scaler, feature_columns
+    
+    try:
+        # Load the Mall Customers dataset
+        current_data = get_sample_data()
+        print(f"Loaded {len(current_data)} customer records from Mall_Customers.csv")
+        
+        # Perform clustering with optimal parameters
+        clustering_results = perform_clustering(
+            current_data, 
+            ['Age', 'Annual Income (k$)', 'Spending Score (1-100)'], 
+            5,  # 5 clusters works well for this dataset
+            True,  # scale features
+            42  # random state
+        )
+        print("Clustering analysis completed")
+        
+        # Train the classification model
+        df_clustered = clustering_results['df_clustered']
+        features_used = clustering_results['features_used']
+        
+        # Prepare features for training
+        feature_data = df_clustered[features_used].copy()
+        
+        # Add gender encoding
+        if 'Genre' in df_clustered.columns:
+            feature_data['Genre_Male'] = (df_clustered['Genre'] == 'Male').astype(int)
+            feature_data['Genre_Female'] = (df_clustered['Genre'] == 'Female').astype(int)
+        
+        feature_columns = feature_data.columns.tolist()
+        
+        # Scale features
+        model_scaler = StandardScaler()
+        X_scaled = model_scaler.fit_transform(feature_data)
+        
+        # Get cluster labels as target
+        y = df_clustered['Cluster'].values
+        
+        # Train Random Forest classifier
+        trained_model = RandomForestClassifier(
+            n_estimators=100,
+            random_state=42,
+            max_depth=10,
+            min_samples_split=5,
+            min_samples_leaf=2
+        )
+        
+        trained_model.fit(X_scaled, y)
+        
+        # Calculate accuracy on full dataset for verification
+        y_pred = trained_model.predict(X_scaled)
+        accuracy = accuracy_score(y, y_pred)
+        
+        # Save model to disk
+        os.makedirs('models', exist_ok=True)
+        with open('models/customer_classifier.pkl', 'wb') as f:
+            pickle.dump({
+                'model': trained_model,
+                'scaler': model_scaler,
+                'feature_columns': feature_columns,
+                'features_used': features_used,
+                'clustering_results': clustering_results
+            }, f)
+        
+        print(f"Classification model trained and saved with accuracy: {accuracy:.2%}")
+        print("Application ready for customer classification!")
+        
+    except Exception as e:
+        print(f"Error during initialization: {e}")
+        # Try to load existing model if available
+        try:
+            if os.path.exists('models/customer_classifier.pkl'):
+                with open('models/customer_classifier.pkl', 'rb') as f:
+                    saved_data = pickle.load(f)
+                    trained_model = saved_data['model']
+                    model_scaler = saved_data['scaler']
+                    feature_columns = saved_data['feature_columns']
+                    if 'clustering_results' in saved_data:
+                        clustering_results = saved_data['clustering_results']
+                print("Loaded existing model from disk")
+        except Exception as load_error:
+            print(f"Error loading existing model: {load_error}")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -160,14 +245,27 @@ def get_eda():
         # Outlier detection
         outliers = detect_outliers(current_data)
         
+        # Convert numpy/pandas types to Python native types for JSON serialization
+        def convert_to_serializable(obj):
+            if hasattr(obj, 'item'):
+                return obj.item()
+            elif hasattr(obj, 'tolist'):
+                return obj.tolist()
+            elif isinstance(obj, dict):
+                return {k: convert_to_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_to_serializable(item) for item in obj]
+            else:
+                return obj
+        
         return jsonify({
             'success': True,
             'plots': eda_json,
             'statistics': {
-                'numerical': stats_summary['numerical'].to_dict(),
-                'categorical': stats_summary['categorical']
+                'numerical': convert_to_serializable(stats_summary['numerical'].to_dict()),
+                'categorical': convert_to_serializable(stats_summary['categorical'])
             },
-            'outliers': outliers
+            'outliers': convert_to_serializable(outliers)
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -496,4 +594,6 @@ def model_status():
     })
 
 if __name__ == '__main__':
+    # Initialize the application with pre-trained model
+    initialize_app()
     app.run(host='0.0.0.0', port=5000, debug=True)
