@@ -73,13 +73,19 @@ def create_cluster_visualization(df_clustered, features):
         fig = px.parallel_coordinates(
             df_clustered[feature_cols],
             color='Cluster',
-            title='Customer Clusters - Parallel Coordinates',
-            color_discrete_sequence=px.colors.qualitative.Set1
+            title='Customer Clusters - Parallel Coordinates'
         )
     
     fig.update_layout(
         height=600,
-        showlegend=True
+        showlegend=True,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white', size=12),
+        title_font=dict(color='white', size=16),
+        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
+        legend=dict(font=dict(color='white'))
     )
     
     return fig
@@ -105,34 +111,46 @@ def create_correlation_heatmap(df):
             xref="paper", yref="paper",
             x=0.5, y=0.5, xanchor='center', yanchor='middle',
             showarrow=False,
-            font=dict(size=16)
+            font=dict(size=16, color='white')
+        )
+        fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white')
         )
         return fig
     
     # Calculate correlation matrix
     correlation_matrix = df[numerical_cols].corr()
     
-    # Create heatmap
-    fig = px.imshow(
-        correlation_matrix,
-        labels=dict(x="Features", y="Features", color="Correlation"),
+    # Create heatmap using go.Heatmap for better control
+    fig = go.Figure(data=go.Heatmap(
+        z=correlation_matrix.values,
         x=correlation_matrix.columns,
         y=correlation_matrix.columns,
-        color_continuous_scale='RdBu',
-        aspect="auto",
-        title="Feature Correlation Matrix"
-    )
-    
-    # Add correlation values as text
-    fig.update_traces(
+        colorscale='RdBu',
+        zmid=0,
         text=np.around(correlation_matrix.values, decimals=2),
         texttemplate="%{text}",
-        textfont={"size": 10}
-    )
+        textfont={"size": 12, "color": "white"},
+        hoverongaps=False,
+        colorbar=dict(
+            title="Correlation",
+            titlefont=dict(color='white'),
+            tickfont=dict(color='white')
+        )
+    ))
     
     fig.update_layout(
+        title="Feature Correlation Matrix",
         height=500,
-        width=500
+        width=600,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white', size=12),
+        title_font=dict(color='white', size=16),
+        xaxis=dict(color='white', tickangle=45),
+        yaxis=dict(color='white')
     )
     
     return fig
