@@ -115,7 +115,7 @@
                             <p>Click or drag CSV file here</p>
                             <button class="btn btn-outline-primary btn-sm" onclick="$('#file-upload').click()">Choose File</button>
                         </div>
-                        <button class="btn btn-secondary btn-sm w-100 mb-2" id="load-sample-btn">Load Sample Data</button>
+                        <button class="btn btn-secondary btn-sm w-100 mb-2" id="load-sample-btn">Load Mall Customers Dataset</button>
                         <div id="data-status" class="mt-2"></div>
                     </div>
                 </div>
@@ -315,7 +315,7 @@
                         dataLoaded = true;
                         $('#data-status').html(`
                             <div class="alert alert-success alert-sm">
-                                ✅ Data loaded successfully!<br>
+                                ✅ ${response.message}<br>
                                 <small>${response.data_info.rows} customers, ${response.data_info.columns} features</small>
                             </div>
                         `);

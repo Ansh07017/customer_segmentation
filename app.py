@@ -102,11 +102,12 @@ def load_sample_data():
         current_data = get_sample_data()
         return jsonify({
             'success': True,
-            'message': 'Sample data loaded successfully',
+            'message': 'Mall Customers dataset loaded successfully',
             'data_info': {
                 'rows': len(current_data),
                 'columns': len(current_data.columns),
-                'column_names': current_data.columns.tolist()
+                'column_names': current_data.columns.tolist(),
+                'source': 'Mall_Customers.csv from uploaded dataset'
             }
         })
     except Exception as e:

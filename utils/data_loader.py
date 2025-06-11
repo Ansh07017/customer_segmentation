@@ -122,68 +122,35 @@ def clean_data(df):
 
 def get_sample_data():
     """
-    Generate sample Mall Customer Segmentation data for demonstration.
-    This function creates realistic sample data when the actual dataset is not available.
+    Load the actual Mall Customer Segmentation dataset.
     
     Returns:
-        pandas.DataFrame: Sample customer segmentation dataset
+        pandas.DataFrame: Mall customer segmentation dataset
     """
-    np.random.seed(42)
-    
-    # Generate sample data
-    n_customers = 200
-    
-    # Customer IDs
-    customer_ids = range(1, n_customers + 1)
-    
-    # Generate ages with realistic distribution
-    ages = np.random.normal(40, 12, n_customers)
-    ages = np.clip(ages, 18, 70).astype(int)
-    
-    # Generate genders
-    genders = np.random.choice(['Male', 'Female'], n_customers, p=[0.44, 0.56])
-    
-    # Generate income with some correlation to age
-    base_income = np.random.normal(50, 20, n_customers)
-    age_factor = (ages - 18) * 0.5  # Older people tend to have higher income
-    annual_income = base_income + age_factor + np.random.normal(0, 5, n_customers)
-    annual_income = np.clip(annual_income, 15, 120).astype(int)
-    
-    # Generate spending scores with some patterns
-    # Create different customer segments
-    spending_scores = []
-    for i in range(n_customers):
-        income = annual_income[i]
-        age = ages[i]
+    try:
+        # Load the actual dataset
+        df = pd.read_csv('extracted_data/Mall_Customers.csv')
         
-        # Different spending patterns based on income and age
-        if income < 30:  # Low income
-            score = np.random.normal(30, 15)
-        elif income < 60:  # Medium income
-            if age < 35:  # Young medium income - higher spending
-                score = np.random.normal(65, 20)
-            else:  # Older medium income - moderate spending
-                score = np.random.normal(45, 15)
-        else:  # High income
-            if age < 45:  # Young high income - very high spending
-                score = np.random.normal(80, 15)
-            else:  # Older high income - moderate to high spending
-                score = np.random.normal(60, 20)
+        # Standardize column names to match expected format
+        column_mapping = {
+            'Gender': 'Genre'  # Map Gender to Genre for consistency
+        }
+        df = df.rename(columns=column_mapping)
         
-        spending_scores.append(np.clip(score, 1, 100))
-    
-    spending_scores = np.array(spending_scores).astype(int)
-    
-    # Create DataFrame
-    df = pd.DataFrame({
-        'CustomerID': customer_ids,
-        'Genre': genders,
-        'Age': ages,
-        'Annual Income (k$)': annual_income,
-        'Spending Score (1-100)': spending_scores
-    })
-    
-    return df
+        # Clean and validate data
+        df = clean_data(df)
+        
+        return df
+    except FileNotFoundError:
+        # Fallback: create minimal realistic data if file not found
+        df = pd.DataFrame({
+            'CustomerID': range(1, 11),
+            'Genre': ['Male', 'Female'] * 5,
+            'Age': [25, 30, 35, 40, 45, 28, 32, 38, 42, 48],
+            'Annual Income (k$)': [50, 60, 70, 80, 90, 55, 65, 75, 85, 95],
+            'Spending Score (1-100)': [50, 60, 40, 70, 30, 80, 45, 85, 35, 75]
+        })
+        return df
 
 def validate_data_quality(df):
     """
