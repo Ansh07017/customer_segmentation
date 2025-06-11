@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Segmentation Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .nav-pills .nav-link.active {
+            background-color: #007bff;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .plot-container {
+            height: 500px;
+            margin-bottom: 20px;
+        }
+        .cluster-params {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .insight-card {
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+        .upload-area:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" href="#">🛍️ Customer Segmentation Dashboard</a>
+                        <small class="navbar-text text-light">K-Means Clustering & Classification for Customer Analysis</small>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Navigation</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-pills flex-column" id="nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#" data-section="overview">Data Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-section="eda">Exploratory Data Analysis</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-section="clustering">Customer Segmentation</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-section="analysis">Cluster Analysis</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-section="classification">Customer Classification</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Data Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-area" id="upload-area">
+                            <input type="file" id="file-upload" accept=".csv" style="display: none;">
+                            <p>Click or drag CSV file here</p>
+                            <button class="btn btn-outline-primary btn-sm" onclick="$('#file-upload').click()">Choose File</button>
+                        </div>
+                        <button class="btn btn-secondary btn-sm w-100 mb-2" id="load-sample-btn">Load Sample Data</button>
+                        <div id="data-status" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div id="main-content">
+                    <!-- Data Overview Section -->
+                    <div id="overview-section" class="content-section">
+                        <h2>📊 Data Overview</h2>
+                        <div class="loading" id="overview-loading">
+                            <div class="spinner-border" role="status"></div>
+                            <p>Loading data overview...</p>
+                        </div>
+                        <div id="overview-content"></div>
+                    </div>
+
+                    <!-- EDA Section -->
+                    <div id="eda-section" class="content-section" style="display: none;">
+                        <h2>🔍 Exploratory Data Analysis</h2>
+                        <div class="loading" id="eda-loading">
+                            <div class="spinner-border" role="status"></div>
+                            <p>Performing exploratory data analysis...</p>
+                        </div>
+                        <div id="eda-content"></div>
+                    </div>
+
+                    <!-- Clustering Section -->
+                    <div id="clustering-section" class="content-section" style="display: none;">
+                        <h2>🎯 Customer Segmentation</h2>
+                        <div class="cluster-params">
+                            <h4>Clustering Parameters</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="n-clusters" class="form-label">Number of Clusters</label>
+                                        <input type="range" class="form-range" id="n-clusters" min="2" max="10" value="5">
+                                        <span id="n-clusters-value">5</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Features for Clustering</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="feature-age" value="Age">
+                                            <label class="form-check-label" for="feature-age">Age</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="feature-income" value="Annual Income (k$)" checked>
+                                            <label class="form-check-label" for="feature-income">Annual Income (k$)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="feature-spending" value="Spending Score (1-100)" checked>
+                                            <label class="form-check-label" for="feature-spending">Spending Score (1-100)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="random-state" class="form-label">Random State</label>
+                                        <input type="number" class="form-control" id="random-state" value="42" min="0" max="100">
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scale-features" checked>
+                                        <label class="form-check-label" for="scale-features">Scale Features</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-success" id="run-clustering-btn">🚀 Run Clustering Analysis</button>
+                            <button class="btn btn-info ms-2" id="train-model-btn">🎯 Train Classification Model</button>
+                        </div>
+                        <div class="loading" id="clustering-loading">
+                            <div class="spinner-border" role="status"></div>
+                            <p>Performing clustering analysis...</p>
+                        </div>
+                        <div id="clustering-content"></div>
+                    </div>
+
+                    <!-- Analysis Section -->
+                    <div id="analysis-section" class="content-section" style="display: none;">
+                        <h2>📈 Cluster Analysis & Insights</h2>
+                        <div class="loading" id="analysis-loading">
+                            <div class="spinner-border" role="status"></div>
+                            <p>Loading cluster analysis...</p>
+                        </div>
+                        <div id="analysis-content"></div>
+                    </div>
+
+                    <!-- Classification Section -->
+                    <div id="classification-section" class="content-section" style="display: none;">
+                        <h2>🎯 Customer Classification</h2>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Classify New Customers</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Customer Information</label>
+                                            <div class="mb-2">
+                                                <input type="number" class="form-control" id="new-age" placeholder="Age" min="18" max="100">
+                                            </div>
+                                            <div class="mb-2">
+                                                <input type="number" class="form-control" id="new-income" placeholder="Annual Income (k$)" min="10" max="200">
+                                            </div>
+                                            <div class="mb-2">
+                                                <input type="number" class="form-control" id="new-spending" placeholder="Spending Score (1-100)" min="1" max="100">
+                                            </div>
+                                            <select class="form-control mb-2" id="new-gender">
+                                                <option value="">Select Gender</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-primary" id="classify-btn">Classify Customer</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div id="classification-result"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="classification-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let dataLoaded = false;
+            let clusteringResults = false;
+            let modelTrained = false;
+
+            // Navigation
+            $('#nav-tabs a').click(function(e) {
+                e.preventDefault();
+                const section = $(this).data('section');
+                
+                // Update active nav
+                $('#nav-tabs a').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show corresponding section
+                $('.content-section').hide();
+                $(`#${section}-section`).show();
+                
+                // Load section content
+                loadSectionContent(section);
+            });
+
+            // File upload handling
+            $('#file-upload').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    uploadFile(file);
+                }
+            });
+
+            // Drag and drop
+            $('#upload-area').on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('bg-light');
+            });
+
+            $('#upload-area').on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('bg-light');
+            });
+
+            $('#upload-area').on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('bg-light');
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    uploadFile(files[0]);
+                }
+            });
+
+            // Click to upload
+            $('#upload-area').click(function() {
+                $('#file-upload').click();
+            });
+
+            // Number of clusters slider
+            $('#n-clusters').on('input', function() {
+                $('#n-clusters-value').text($(this).val());
+            });
+
+            // Load sample data
+            $('#load-sample-btn').click(function() {
+                $(this).prop('disabled', true).text('Loading...');
+                
+                $.get('/api/load_sample_data', function(response) {
+                    if (response.success) {
+                        dataLoaded = true;
+                        $('#data-status').html(`
+                            <div class="alert alert-success alert-sm">
+                                ✅ Data loaded successfully!<br>
+                                <small>${response.data_info.rows} customers, ${response.data_info.columns} features</small>
+                            </div>
+                        `);
+                        loadSectionContent('overview');
+                    } else {
+                        $('#data-status').html(`
+                            <div class="alert alert-danger alert-sm">
+                                ❌ Error: ${response.error}
+                            </div>
+                        `);
+                    }
+                }).fail(function() {
+                    $('#data-status').html(`
+                        <div class="alert alert-danger alert-sm">
+                            ❌ Failed to load data
+                        </div>
+                    `);
+                }).always(function() {
+                    $('#load-sample-btn').prop('disabled', false).text('Load Sample Data');
+                });
+            });
+
+            function uploadFile(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                $('#data-status').html('<div class="alert alert-info alert-sm">Uploading...</div>');
+
+                $.ajax({
+                    url: '/api/upload_data',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            dataLoaded = true;
+                            $('#data-status').html(`
+                                <div class="alert alert-success alert-sm">
+                                    ✅ Data uploaded successfully!<br>
+                                    <small>${response.data_info.rows} customers, ${response.data_info.columns} features</small>
+                                </div>
+                            `);
+                            loadSectionContent('overview');
+                        } else {
+                            $('#data-status').html(`
+                                <div class="alert alert-danger alert-sm">
+                                    ❌ Error: ${response.error}
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $('#data-status').html(`
+                            <div class="alert alert-danger alert-sm">
+                                ❌ Upload failed
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            // Run clustering
+            $('#run-clustering-btn').click(function() {
+                if (!dataLoaded) {
+                    alert('Please load data first');
+                    return;
+                }
+
+                const features = [];
+                $('.form-check-input[type="checkbox"]:not(#scale-features):checked').each(function() {
+                    features.push($(this).val());
+                });
+
+                if (features.length < 2) {
+                    alert('Please select at least 2 features for clustering');
+                    return;
+                }
+
+                const params = {
+                    n_clusters: parseInt($('#n-clusters').val()),
+                    features: features,
+                    scale_features: $('#scale-features').is(':checked'),
+                    random_state: parseInt($('#random-state').val())
+                };
+
+                $('#clustering-loading').show();
+                $('#clustering-content').empty();
+
+                $.ajax({
+                    url: '/api/perform_clustering',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(params),
+                    success: function(response) {
+                        if (response.success) {
+                            clusteringResults = true;
+                            displayClusteringResults(response.results);
+                        } else {
+                            $('#clustering-content').html(`
+                                <div class="alert alert-danger">
+                                    Error: ${response.error}
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $('#clustering-content').html(`
+                            <div class="alert alert-danger">
+                                Failed to perform clustering analysis
+                            </div>
+                        `);
+                    },
+                    complete: function() {
+                        $('#clustering-loading').hide();
+                    }
+                });
+            });
+
+            // Train model
+            $('#train-model-btn').click(function() {
+                if (!clusteringResults) {
+                    alert('Please run clustering analysis first');
+                    return;
+                }
+
+                $(this).prop('disabled', true).text('Training...');
+
+                $.ajax({
+                    url: '/api/train_model',
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            modelTrained = true;
+                            $('#clustering-content').append(`
+                                <div class="alert alert-success mt-3">
+                                    ✅ Classification model trained successfully!<br>
+                                    <small>Accuracy: ${(response.accuracy * 100).toFixed(2)}%</small>
+                                </div>
+                            `);
+                        } else {
+                            $('#clustering-content').append(`
+                                <div class="alert alert-danger mt-3">
+                                    Error training model: ${response.error}
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $('#clustering-content').append(`
+                            <div class="alert alert-danger mt-3">
+                                Failed to train classification model
+                            </div>
+                        `);
+                    },
+                    complete: function() {
+                        $('#train-model-btn').prop('disabled', false).text('🎯 Train Classification Model');
+                    }
+                });
+            });
+
+            // Classify customer
+            $('#classify-btn').click(function() {
+                if (!modelTrained) {
+                    alert('Please train the classification model first');
+                    return;
+                }
+
+                const customerData = {
+                    Age: parseFloat($('#new-age').val()),
+                    'Annual Income (k$)': parseFloat($('#new-income').val()),
+                    'Spending Score (1-100)': parseFloat($('#new-spending').val()),
+                    Genre: $('#new-gender').val()
+                };
+
+                // Validate input
+                if (!customerData.Age || !customerData['Annual Income (k$)'] || !customerData['Spending Score (1-100)'] || !customerData.Genre) {
+                    alert('Please fill in all customer information');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/classify_customer',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(customerData),
+                    success: function(response) {
+                        if (response.success) {
+                            displayClassificationResult(response);
+                        } else {
+                            $('#classification-result').html(`
+                                <div class="alert alert-danger">
+                                    Error: ${response.error}
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $('#classification-result').html(`
+                            <div class="alert alert-danger">
+                                Classification failed
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            function loadSectionContent(section) {
+                if (!dataLoaded && section !== 'overview') {
+                    $(`#${section}-content`).html(`
+                        <div class="alert alert-warning">
+                            Please load data first using the sidebar
+                        </div>
+                    `);
+                    return;
+                }
+
+                switch(section) {
+                    case 'overview':
+                        if (dataLoaded) loadDataOverview();
+                        break;
+                    case 'eda':
+                        loadEDA();
+                        break;
+                    case 'clustering':
+                        break;
+                    case 'analysis':
+                        loadClusterAnalysis();
+                        break;
+                    case 'classification':
+                        loadClassificationSection();
+                        break;
+                }
+            }
+
+            function loadDataOverview() {
+                $('#overview-loading').show();
+                $('#overview-content').empty();
+
+                $.get('/api/get_data_overview', function(response) {
+                    if (response.success) {
+                        displayDataOverview(response.data);
+                    } else {
+                        $('#overview-content').html(`
+                            <div class="alert alert-danger">
+                                Error: ${response.error}
+                            </div>
+                        `);
+                    }
+                }).always(function() {
+                    $('#overview-loading').hide();
+                });
+            }
+
+            function loadEDA() {
+                $('#eda-loading').show();
+                $('#eda-content').empty();
+
+                $.get('/api/get_eda', function(response) {
+                    if (response.success) {
+                        displayEDA(response);
+                    } else {
+                        $('#eda-content').html(`
+                            <div class="alert alert-danger">
+                                Error: ${response.error}
+                            </div>
+                        `);
+                    }
+                }).always(function() {
+                    $('#eda-loading').hide();
+                });
+            }
+
+            function loadClusterAnalysis() {
+                if (!clusteringResults) {
+                    $('#analysis-content').html(`
+                        <div class="alert alert-warning">
+                            Please run clustering analysis first in the 'Customer Segmentation' section
+                        </div>
+                    `);
+                    return;
+                }
+
+                $('#analysis-loading').show();
+                $('#analysis-content').empty();
+
+                $.get('/api/get_cluster_analysis', function(response) {
+                    if (response.success) {
+                        displayClusterAnalysis(response);
+                    } else {
+                        $('#analysis-content').html(`
+                            <div class="alert alert-danger">
+                                Error: ${response.error}
+                            </div>
+                        `);
+                    }
+                }).always(function() {
+                    $('#analysis-loading').hide();
+                });
+            }
+
+            function loadClassificationSection() {
+                if (!modelTrained) {
+                    $('#classification-content').html(`
+                        <div class="alert alert-warning">
+                            Please train the classification model first in the 'Customer Segmentation' section
+                        </div>
+                    `);
+                }
+            }
+
+            function displayDataOverview(data) {
+                const content = `
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value">${data.total_customers}</div>
+                                <div class="metric-label">Total Customers</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value">${data.features}</div>
+                                <div class="metric-label">Features</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value">${data.male_customers}</div>
+                                <div class="metric-label">Male Customers</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value">${data.female_customers}</div>
+                                <div class="metric-label">Female Customers</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Dataset Preview</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            ${Object.keys(data.data_preview[0]).map(key => `<th>${key}</th>`).join('')}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.data_preview.map(row => 
+                                            `<tr>${Object.values(row).map(val => `<td>${val}</td>`).join('')}</tr>`
+                                        ).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#overview-content').html(content);
+            }
+
+            function displayEDA(response) {
+                const content = `
+                    <ul class="nav nav-tabs" id="eda-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#distributions">Distributions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#correlations">Correlations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#gender-analysis">Gender Analysis</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3">
+                        <div class="tab-pane fade show active" id="distributions">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="age-dist-plot" class="plot-container"></div>
+                                    <div id="income-dist-plot" class="plot-container"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="spending-dist-plot" class="plot-container"></div>
+                                    <div id="gender-dist-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="correlations">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div id="correlation-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="gender-analysis">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="gender-income-plot" class="plot-container"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="gender-spending-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $('#eda-content').html(content);
+                
+                // Plot the charts
+                Plotly.newPlot('age-dist-plot', JSON.parse(response.plots.age_dist).data, JSON.parse(response.plots.age_dist).layout);
+                Plotly.newPlot('income-dist-plot', JSON.parse(response.plots.income_dist).data, JSON.parse(response.plots.income_dist).layout);
+                Plotly.newPlot('spending-dist-plot', JSON.parse(response.plots.spending_dist).data, JSON.parse(response.plots.spending_dist).layout);
+                Plotly.newPlot('gender-dist-plot', JSON.parse(response.plots.gender_dist).data, JSON.parse(response.plots.gender_dist).layout);
+                Plotly.newPlot('correlation-plot', JSON.parse(response.plots.correlation).data, JSON.parse(response.plots.correlation).layout);
+                Plotly.newPlot('gender-income-plot', JSON.parse(response.plots.gender_income).data, JSON.parse(response.plots.gender_income).layout);
+                Plotly.newPlot('gender-spending-plot', JSON.parse(response.plots.gender_spending).data, JSON.parse(response.plots.gender_spending).layout);
+            }
+
+            function displayClusteringResults(results) {
+                const content = `
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card metric-card">
+                                <div class="metric-value">${results.inertia.toFixed(2)}</div>
+                                <div class="metric-label">WCSS (Inertia)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card metric-card">
+                                <div class="metric-value">${results.silhouette_score.toFixed(3)}</div>
+                                <div class="metric-label">Silhouette Score</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Cluster Visualization</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="cluster-viz-plot" class="plot-container"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Cluster Distribution (Pie Chart)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="cluster-pie-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Cluster Sizes (Bar Chart)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="cluster-bar-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $('#clustering-content').html(content);
+                
+                // Plot the charts
+                Plotly.newPlot('cluster-viz-plot', JSON.parse(results.cluster_visualization).data, JSON.parse(results.cluster_visualization).layout);
+                Plotly.newPlot('cluster-pie-plot', JSON.parse(results.cluster_pie).data, JSON.parse(results.cluster_pie).layout);
+                Plotly.newPlot('cluster-bar-plot', JSON.parse(results.cluster_bar).data, JSON.parse(results.cluster_bar).layout);
+            }
+
+            function displayClusterAnalysis(response) {
+                let content = '<div class="row">';
+                
+                // Create tabs for each cluster
+                const clusterTabs = Object.keys(response.cluster_details).map(clusterId => 
+                    `<li class="nav-item">
+                        <a class="nav-link ${clusterId == 0 ? 'active' : ''}" data-bs-toggle="tab" href="#cluster-${clusterId}">Cluster ${clusterId}</a>
+                    </li>`
+                ).join('');
+                
+                content += `
+                    <div class="col-12">
+                        <ul class="nav nav-tabs">
+                            ${clusterTabs}
+                        </ul>
+                        <div class="tab-content mt-3">
+                `;
+                
+                // Create content for each cluster
+                Object.entries(response.cluster_details).forEach(([clusterId, details]) => {
+                    content += `
+                        <div class="tab-pane fade ${clusterId == 0 ? 'show active' : ''}" id="cluster-${clusterId}">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="card metric-card">
+                                        <div class="metric-value">${details.size}</div>
+                                        <div class="metric-label">Customers</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card metric-card">
+                                        <div class="metric-value">${details.percentage.toFixed(1)}%</div>
+                                        <div class="metric-label">Of Total</div>
+                                    </div>
+                                </div>
+                    `;
+                    
+                    // Add feature statistics
+                    response.features_used.forEach(feature => {
+                        const meanKey = `${feature}_mean`;
+                        if (details[meanKey] !== undefined) {
+                            content += `
+                                <div class="col-md-3">
+                                    <div class="card metric-card">
+                                        <div class="metric-value">${details[meanKey].toFixed(1)}</div>
+                                        <div class="metric-label">Avg ${feature}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    content += `
+                            </div>
+                            ${details.gender_chart ? `<div id="gender-chart-${clusterId}" class="plot-container"></div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                content += `
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Business Insights & Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                `;
+                
+                // Add insights
+                Object.entries(response.insights).forEach(([clusterId, insight]) => {
+                    content += `
+                        <div class="insight-card">
+                            <h6>Cluster ${clusterId} - ${insight.profile}</h6>
+                            <p><strong>Size:</strong> ${insight.size} customers (${insight.percentage.toFixed(1)}% of total)</p>
+                            <p><strong>Characteristics:</strong> ${insight.characteristics}</p>
+                            <p><strong>Marketing Strategy:</strong> ${insight.strategy}</p>
+                        </div>
+                    `;
+                });
+                
+                content += `
+                    </div>
+                </div>
+                `;
+                
+                $('#analysis-content').html(content);
+                
+                // Plot gender charts
+                Object.entries(response.cluster_details).forEach(([clusterId, details]) => {
+                    if (details.gender_chart) {
+                        Plotly.newPlot(`gender-chart-${clusterId}`, JSON.parse(details.gender_chart).data, JSON.parse(details.gender_chart).layout);
+                    }
+                });
+            }
+
+            function displayClassificationResult(response) {
+                const result = response.prediction;
+                const content = `
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6>Classification Result</h6>
+                        </div>
+                        <div class="card-body">
+                            <h4>Cluster ${result.cluster}</h4>
+                            <p><strong>Profile:</strong> ${result.profile}</p>
+                            <p><strong>Characteristics:</strong> ${result.characteristics}</p>
+                            <p><strong>Recommended Strategy:</strong> ${result.strategy}</p>
+                            <p><strong>Confidence:</strong> ${(result.confidence * 100).toFixed(1)}%</p>
+                        </div>
+                    </div>
+                `;
+                $('#classification-result').html(content);
+            }
+
+            // Initialize with sample data load
+            $('#load-sample-btn').click();
+        });
+    </script>
+</body>
+</html>

@@ -1,391 +1,495 @@
-import streamlit as st
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import pandas as pd
 import numpy as np
+import json
+import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score, accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+import pickle
+import os
 import warnings
 warnings.filterwarnings('ignore')
 
 # Import utility functions
-from utils.data_loader import load_data, get_sample_data
-from utils.eda_functions import perform_eda, show_data_info
-from utils.clustering import perform_clustering, get_cluster_insights
+from utils.data_loader import get_sample_data, load_data
+from utils.eda_functions import perform_eda, get_statistical_summary, detect_outliers
+from utils.clustering import perform_clustering, get_cluster_insights, calculate_optimal_clusters
 from utils.visualizations import create_cluster_visualization, create_correlation_heatmap
 
-# Page configuration
-st.set_page_config(
-    page_title="Customer Segmentation Dashboard",
-    page_icon="🛍️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+app = Flask(__name__)
+CORS(app)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-def main():
-    st.title("🛍️ Customer Segmentation Dashboard")
-    st.markdown("### Using K-Means Clustering for Mall Customer Analysis")
+# Global variables to store data and models
+current_data = None
+clustering_results = None
+trained_model = None
+model_scaler = None
+feature_columns = None
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/upload_data', methods=['POST'])
+def upload_data():
+    global current_data
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No file uploaded'})
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No file selected'})
+        
+        if file.filename is None or not file.filename.lower().endswith('.csv'):
+            return jsonify({'success': False, 'error': 'Only CSV files are supported'})
+        
+        # Read the uploaded CSV file
+        current_data = pd.read_csv(file)
+        
+        # Try to standardize column names for common customer segmentation datasets
+        column_mapping = {}
+        for col in current_data.columns:
+            col_lower = col.lower()
+            if any(keyword in col_lower for keyword in ['customer', 'id']):
+                column_mapping[col] = 'CustomerID'
+            elif any(keyword in col_lower for keyword in ['gender', 'genre', 'sex']):
+                column_mapping[col] = 'Genre'
+            elif 'age' in col_lower:
+                column_mapping[col] = 'Age'
+            elif any(keyword in col_lower for keyword in ['income', 'annual']):
+                column_mapping[col] = 'Annual Income (k$)'
+            elif any(keyword in col_lower for keyword in ['spending', 'score']):
+                column_mapping[col] = 'Spending Score (1-100)'
+        
+        # Apply column mapping
+        current_data = current_data.rename(columns=column_mapping)
+        
+        # Clean the data
+        current_data = current_data.dropna()
+        
+        # Standardize Genre values
+        if 'Genre' in current_data.columns:
+            current_data['Genre'] = current_data['Genre'].str.title()
+            current_data['Genre'] = current_data['Genre'].replace({'M': 'Male', 'F': 'Female'})
+        
+        return jsonify({
+            'success': True,
+            'message': 'Data uploaded successfully',
+            'data_info': {
+                'rows': len(current_data),
+                'columns': len(current_data.columns),
+                'column_names': current_data.columns.tolist()
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/load_sample_data')
+def load_sample_data():
+    global current_data
+    try:
+        current_data = get_sample_data()
+        return jsonify({
+            'success': True,
+            'message': 'Sample data loaded successfully',
+            'data_info': {
+                'rows': len(current_data),
+                'columns': len(current_data.columns),
+                'column_names': current_data.columns.tolist()
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/get_data_overview')
+def get_data_overview():
+    global current_data
+    if current_data is None:
+        return jsonify({'success': False, 'error': 'No data loaded'})
     
-    # Sidebar for navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox(
-        "Choose a section:",
-        ["Data Overview", "Exploratory Data Analysis", "Customer Segmentation", "Cluster Analysis"]
-    )
+    try:
+        # Basic statistics
+        overview = {
+            'total_customers': len(current_data),
+            'features': len(current_data.columns),
+            'male_customers': len(current_data[current_data['Genre'] == 'Male']),
+            'female_customers': len(current_data[current_data['Genre'] == 'Female']),
+            'summary_stats': current_data.describe().to_dict(),
+            'data_preview': current_data.head(10).to_dict('records'),
+            'data_types': current_data.dtypes.astype(str).to_dict(),
+            'missing_values': current_data.isnull().sum().to_dict()
+        }
+        return jsonify({'success': True, 'data': overview})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/get_eda')
+def get_eda():
+    global current_data
+    if current_data is None:
+        return jsonify({'success': False, 'error': 'No data loaded'})
     
-    # Data loading section
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Data Loading")
+    try:
+        # Perform EDA
+        eda_results = perform_eda(current_data)
+        
+        # Convert plotly figures to JSON
+        eda_json = {}
+        for key, fig in eda_results.items():
+            eda_json[key] = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        
+        # Correlation heatmap
+        correlation_fig = create_correlation_heatmap(current_data)
+        eda_json['correlation'] = json.dumps(correlation_fig, cls=plotly.utils.PlotlyJSONEncoder)
+        
+        # Statistical summary
+        stats_summary = get_statistical_summary(current_data)
+        
+        # Outlier detection
+        outliers = detect_outliers(current_data)
+        
+        return jsonify({
+            'success': True,
+            'plots': eda_json,
+            'statistics': {
+                'numerical': stats_summary['numerical'].to_dict(),
+                'categorical': stats_summary['categorical']
+            },
+            'outliers': outliers
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/perform_clustering', methods=['POST'])
+def api_perform_clustering():
+    global current_data, clustering_results
+    if current_data is None:
+        return jsonify({'success': False, 'error': 'No data loaded'})
     
-    # Option to upload file or use sample data
-    data_option = st.sidebar.radio(
-        "Choose data source:",
-        ["Upload CSV File", "Use Sample Data"]
-    )
-    
-    df = None
-    
-    if data_option == "Upload CSV File":
-        uploaded_file = st.sidebar.file_uploader(
-            "Upload Mall Customer Segmentation CSV",
-            type=['csv'],
-            help="Upload the Mall Customer Segmentation dataset from Kaggle"
+    try:
+        data = request.get_json()
+        n_clusters = data.get('n_clusters', 5)
+        features = data.get('features', ['Annual Income (k$)', 'Spending Score (1-100)'])
+        scale_features = data.get('scale_features', True)
+        random_state = data.get('random_state', 42)
+        
+        # Validate features
+        missing_features = [f for f in features if f not in current_data.columns]
+        if missing_features:
+            return jsonify({
+                'success': False, 
+                'error': f'Missing features: {missing_features}'
+            })
+        
+        # Perform clustering
+        clustering_results = perform_clustering(
+            current_data, features, n_clusters, scale_features, random_state
         )
         
-        if uploaded_file is not None:
-            try:
-                df = load_data(uploaded_file)
-                st.sidebar.success("✅ Data loaded successfully!")
-            except Exception as e:
-                st.sidebar.error(f"❌ Error loading data: {str(e)}")
-                return
-        else:
-            st.sidebar.info("Please upload a CSV file to continue")
-            st.info("👆 Please upload the Mall Customer Segmentation dataset using the sidebar to get started.")
-            st.markdown("""
-            **Expected dataset format:**
-            - CustomerID: Unique identifier for each customer
-            - Genre: Customer gender (Male/Female)
-            - Age: Customer age
-            - Annual Income (k$): Annual income in thousands of dollars
-            - Spending Score (1-100): Score assigned based on customer behavior and spending nature
-            """)
-            return
-    else:
-        # Use sample data
-        df = get_sample_data()
-        st.sidebar.success("✅ Sample data loaded!")
-        st.sidebar.info("Using sample Mall Customer Segmentation data for demonstration")
-    
-    # Main content based on selected page
-    if page == "Data Overview":
-        show_data_overview(df)
-    elif page == "Exploratory Data Analysis":
-        show_eda(df)
-    elif page == "Customer Segmentation":
-        show_clustering(df)
-    elif page == "Cluster Analysis":
-        show_cluster_analysis(df)
-
-def show_data_overview(df):
-    st.header("📊 Data Overview")
-    
-    # Display basic information
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Total Customers", len(df))
-    
-    with col2:
-        st.metric("Features", len(df.columns))
-    
-    with col3:
-        st.metric("Male Customers", len(df[df['Genre'] == 'Male']))
-    
-    with col4:
-        st.metric("Female Customers", len(df[df['Genre'] == 'Female']))
-    
-    # Show dataset info
-    show_data_info(df)
-    
-    # Display first few rows
-    st.subheader("Dataset Preview")
-    st.dataframe(df.head(10), use_container_width=True)
-    
-    # Basic statistics
-    st.subheader("Statistical Summary")
-    st.dataframe(df.describe(), use_container_width=True)
-
-def show_eda(df):
-    st.header("🔍 Exploratory Data Analysis")
-    
-    # Perform EDA
-    eda_results = perform_eda(df)
-    
-    # Display EDA results
-    tab1, tab2, tab3, tab4 = st.tabs(["Distributions", "Correlations", "Gender Analysis", "Age Groups"])
-    
-    with tab1:
-        st.subheader("Feature Distributions")
+        # Get cluster insights
+        insights = get_cluster_insights(clustering_results['df_clustered'], features)
         
-        col1, col2 = st.columns(2)
+        # Create visualization
+        cluster_viz = create_cluster_visualization(clustering_results['df_clustered'], features)
         
-        with col1:
-            st.plotly_chart(eda_results['age_dist'], use_container_width=True)
-            st.plotly_chart(eda_results['income_dist'], use_container_width=True)
+        # Cluster distribution
+        cluster_counts = clustering_results['df_clustered']['Cluster'].value_counts().sort_index()
         
-        with col2:
-            st.plotly_chart(eda_results['spending_dist'], use_container_width=True)
-            st.plotly_chart(eda_results['gender_dist'], use_container_width=True)
-    
-    with tab2:
-        st.subheader("Correlation Analysis")
-        st.plotly_chart(create_correlation_heatmap(df), use_container_width=True)
-        
-        st.markdown("""
-        **Key Insights from Correlation Analysis:**
-        - Analyze the relationships between numerical features
-        - Identify which features are most correlated
-        - Understand potential clustering patterns
-        """)
-    
-    with tab3:
-        st.subheader("Gender-based Analysis")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.plotly_chart(eda_results['gender_income'], use_container_width=True)
-        
-        with col2:
-            st.plotly_chart(eda_results['gender_spending'], use_container_width=True)
-    
-    with tab4:
-        st.subheader("Age Group Analysis")
-        st.plotly_chart(eda_results['age_income_scatter'], use_container_width=True)
-        st.plotly_chart(eda_results['age_spending_scatter'], use_container_width=True)
-
-def show_clustering(df):
-    st.header("🎯 Customer Segmentation")
-    
-    # Clustering parameters
-    st.subheader("Clustering Parameters")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        n_clusters = st.slider("Number of Clusters", min_value=2, max_value=10, value=5)
-        features_to_use = st.multiselect(
-            "Select Features for Clustering",
-            ['Age', 'Annual Income (k$)', 'Spending Score (1-100)'],
-            default=['Annual Income (k$)', 'Spending Score (1-100)']
-        )
-    
-    with col2:
-        random_state = st.number_input("Random State", min_value=0, max_value=100, value=42)
-        scale_features = st.checkbox("Scale Features", value=True)
-    
-    if len(features_to_use) < 2:
-        st.warning("Please select at least 2 features for clustering.")
-        return
-    
-    # Perform clustering
-    if st.button("🚀 Run Clustering Analysis"):
-        try:
-            # Show progress
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            status_text.text("Preparing data for clustering...")
-            progress_bar.progress(25)
-            
-            # Perform clustering
-            clustering_results = perform_clustering(
-                df, 
-                features_to_use, 
-                n_clusters, 
-                scale_features,
-                random_state
-            )
-            
-            progress_bar.progress(75)
-            status_text.text("Creating visualizations...")
-            
-            # Store results in session state
-            st.session_state.clustering_results = clustering_results
-            st.session_state.features_used = features_to_use
-            st.session_state.n_clusters = n_clusters
-            
-            progress_bar.progress(100)
-            status_text.text("✅ Clustering completed!")
-            
-            # Display results
-            display_clustering_results(clustering_results, features_to_use)
-            
-        except Exception as e:
-            st.error(f"Error during clustering: {str(e)}")
-    
-    # Display previous results if available
-    if 'clustering_results' in st.session_state:
-        st.markdown("---")
-        st.subheader("Previous Clustering Results")
-        display_clustering_results(
-            st.session_state.clustering_results, 
-            st.session_state.features_used
-        )
-
-def display_clustering_results(clustering_results, features_used):
-    df_clustered = clustering_results['df_clustered']
-    centroids = clustering_results['centroids']
-    inertia = clustering_results['inertia']
-    
-    # Display clustering metrics
-    st.metric("Within-cluster Sum of Squares (WCSS)", f"{inertia:.2f}")
-    
-    # Visualization
-    st.subheader("Cluster Visualization")
-    
-    if len(features_used) >= 2:
-        fig = create_cluster_visualization(df_clustered, features_used)
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Cluster distribution
-    st.subheader("Cluster Distribution")
-    cluster_counts = df_clustered['Cluster'].value_counts().sort_index()
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig_pie = px.pie(
+        # Pie chart for cluster distribution
+        pie_fig = px.pie(
             values=cluster_counts.values,
             names=[f"Cluster {i}" for i in cluster_counts.index],
             title="Customer Distribution by Cluster"
         )
-        st.plotly_chart(fig_pie, use_container_width=True)
-    
-    with col2:
-        fig_bar = px.bar(
+        
+        # Bar chart for cluster sizes
+        bar_fig = px.bar(
             x=[f"Cluster {i}" for i in cluster_counts.index],
             y=cluster_counts.values,
             title="Number of Customers per Cluster"
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
+        
+        return jsonify({
+            'success': True,
+            'results': {
+                'inertia': clustering_results['inertia'],
+                'silhouette_score': clustering_results['silhouette_score'],
+                'cluster_visualization': json.dumps(cluster_viz, cls=plotly.utils.PlotlyJSONEncoder),
+                'cluster_pie': json.dumps(pie_fig, cls=plotly.utils.PlotlyJSONEncoder),
+                'cluster_bar': json.dumps(bar_fig, cls=plotly.utils.PlotlyJSONEncoder),
+                'insights': insights,
+                'cluster_counts': cluster_counts.to_dict(),
+                'features_used': features,
+                'n_clusters': n_clusters
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
-def show_cluster_analysis(df):
-    st.header("📈 Cluster Analysis & Insights")
+@app.route('/api/get_cluster_analysis')
+def get_cluster_analysis():
+    global clustering_results
+    if clustering_results is None:
+        return jsonify({'success': False, 'error': 'No clustering results available'})
     
-    if 'clustering_results' not in st.session_state:
-        st.warning("Please run clustering analysis first in the 'Customer Segmentation' section.")
-        return
-    
-    clustering_results = st.session_state.clustering_results
-    features_used = st.session_state.features_used
-    n_clusters = st.session_state.n_clusters
-    
-    df_clustered = clustering_results['df_clustered']
-    centroids = clustering_results['centroids']
-    
-    # Get cluster insights
-    insights = get_cluster_insights(df_clustered, features_used)
-    
-    # Display cluster characteristics
-    st.subheader("Cluster Characteristics")
-    
-    # Create tabs for each cluster
-    cluster_tabs = st.tabs([f"Cluster {i}" for i in range(n_clusters)])
-    
-    for i, tab in enumerate(cluster_tabs):
-        with tab:
-            cluster_data = df_clustered[df_clustered['Cluster'] == i]
+    try:
+        df_clustered = clustering_results['df_clustered']
+        features_used = clustering_results['features_used']
+        n_clusters = df_clustered['Cluster'].nunique()
+        
+        # Get detailed cluster statistics
+        cluster_details = {}
+        for cluster_id in range(n_clusters):
+            cluster_data = df_clustered[df_clustered['Cluster'] == cluster_id]
             
-            # Basic metrics
-            col1, col2, col3, col4 = st.columns(4)
+            cluster_stats = {
+                'size': len(cluster_data),
+                'percentage': (len(cluster_data) / len(df_clustered)) * 100
+            }
             
-            with col1:
-                st.metric("Customers", len(cluster_data))
+            # Feature statistics
+            for feature in features_used:
+                if feature in cluster_data.columns:
+                    cluster_stats[f'{feature}_mean'] = float(cluster_data[feature].mean())
+                    cluster_stats[f'{feature}_std'] = float(cluster_data[feature].std())
+                    cluster_stats[f'{feature}_min'] = float(cluster_data[feature].min())
+                    cluster_stats[f'{feature}_max'] = float(cluster_data[feature].max())
             
-            with col2:
-                if 'Age' in features_used:
-                    st.metric("Avg Age", f"{cluster_data['Age'].mean():.1f}")
-            
-            with col3:
-                if 'Annual Income (k$)' in features_used:
-                    st.metric("Avg Income", f"${cluster_data['Annual Income (k$)'].mean():.1f}k")
-            
-            with col4:
-                if 'Spending Score (1-100)' in features_used:
-                    st.metric("Avg Spending Score", f"{cluster_data['Spending Score (1-100)'].mean():.1f}")
-            
-            # Detailed statistics
-            st.subheader(f"Cluster {i} Statistics")
-            numeric_cols = cluster_data.select_dtypes(include=[np.number]).columns
-            st.dataframe(cluster_data[numeric_cols].describe(), use_container_width=True)
-            
-            # Gender distribution if available
+            # Gender distribution
             if 'Genre' in cluster_data.columns:
-                st.subheader("Gender Distribution")
                 gender_dist = cluster_data['Genre'].value_counts()
-                fig_gender = px.pie(
+                cluster_stats['male_count'] = int(gender_dist.get('Male', 0))
+                cluster_stats['female_count'] = int(gender_dist.get('Female', 0))
+                
+                # Gender pie chart for this cluster
+                gender_pie = px.pie(
                     values=gender_dist.values,
                     names=gender_dist.index,
-                    title=f"Gender Distribution - Cluster {i}"
+                    title=f"Gender Distribution - Cluster {cluster_id}"
                 )
-                st.plotly_chart(fig_gender, use_container_width=True)
-    
-    # Overall insights
-    st.subheader("Business Insights & Recommendations")
-    
-    # Generate insights based on cluster characteristics
-    st.markdown("### Key Findings:")
-    
-    for cluster_id, insight in insights.items():
-        with st.expander(f"Cluster {cluster_id} - {insight['profile']}"):
-            st.write(f"**Size:** {insight['size']} customers ({insight['percentage']:.1f}% of total)")
-            st.write(f"**Characteristics:** {insight['characteristics']}")
-            st.write(f"**Marketing Strategy:** {insight['strategy']}")
-    
-    # Elbow method for optimal clusters
-    st.subheader("Optimal Number of Clusters")
-    
-    if st.button("🔍 Analyze Optimal Clusters (Elbow Method)"):
-        with st.spinner("Analyzing optimal number of clusters..."):
-            # Calculate WCSS for different numbers of clusters
-            wcss_values = []
-            k_range = range(1, 11)
+                cluster_stats['gender_chart'] = json.dumps(gender_pie, cls=plotly.utils.PlotlyJSONEncoder)
             
-            for k in k_range:
-                kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-                
-                # Prepare data
-                X = df[features_used].copy()
-                if st.session_state.get('scale_features', True):
-                    scaler = StandardScaler()
-                    X = scaler.fit_transform(X)
-                
-                kmeans.fit(X)
-                wcss_values.append(kmeans.inertia_)
-            
-            # Plot elbow curve
-            fig_elbow = go.Figure()
-            fig_elbow.add_trace(go.Scatter(
-                x=list(k_range),
-                y=wcss_values,
-                mode='lines+markers',
-                name='WCSS',
-                line=dict(color='blue', width=2),
-                marker=dict(size=8)
-            ))
-            
-            fig_elbow.update_layout(
-                title='Elbow Method for Optimal Number of Clusters',
-                xaxis_title='Number of Clusters (k)',
-                yaxis_title='Within-Cluster Sum of Squares (WCSS)',
-                showlegend=False
-            )
-            
-            st.plotly_chart(fig_elbow, use_container_width=True)
-            
-            st.info("The optimal number of clusters is typically at the 'elbow' point where the rate of decrease in WCSS slows down significantly.")
+            cluster_details[cluster_id] = cluster_stats
+        
+        # Get cluster insights
+        insights = get_cluster_insights(df_clustered, features_used)
+        
+        return jsonify({
+            'success': True,
+            'cluster_details': cluster_details,
+            'insights': insights,
+            'features_used': features_used
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
-if __name__ == "__main__":
-    main()
+@app.route('/api/get_optimal_clusters', methods=['POST'])
+def get_optimal_clusters():
+    global current_data
+    if current_data is None:
+        return jsonify({'success': False, 'error': 'No data loaded'})
+    
+    try:
+        data = request.get_json()
+        features = data.get('features', ['Annual Income (k$)', 'Spending Score (1-100)'])
+        max_clusters = data.get('max_clusters', 10)
+        scale_features = data.get('scale_features', True)
+        
+        # Calculate optimal clusters
+        optimal_results = calculate_optimal_clusters(
+            current_data, features, max_clusters, scale_features
+        )
+        
+        # Create elbow plot
+        elbow_fig = go.Figure()
+        elbow_fig.add_trace(go.Scatter(
+            x=optimal_results['k_range'],
+            y=optimal_results['wcss_values'],
+            mode='lines+markers',
+            name='WCSS',
+            line=dict(color='blue', width=2),
+            marker=dict(size=8)
+        ))
+        
+        elbow_fig.update_layout(
+            title='Elbow Method for Optimal Number of Clusters',
+            xaxis_title='Number of Clusters (k)',
+            yaxis_title='Within-Cluster Sum of Squares (WCSS)',
+            showlegend=False,
+            height=500
+        )
+        
+        # Create silhouette plot
+        silhouette_fig = go.Figure()
+        silhouette_fig.add_trace(go.Scatter(
+            x=optimal_results['k_range'],
+            y=optimal_results['silhouette_scores'],
+            mode='lines+markers',
+            name='Silhouette Score',
+            line=dict(color='green', width=2),
+            marker=dict(size=8)
+        ))
+        
+        silhouette_fig.update_layout(
+            title='Silhouette Analysis for Optimal Number of Clusters',
+            xaxis_title='Number of Clusters (k)',
+            yaxis_title='Average Silhouette Score',
+            showlegend=False,
+            height=500
+        )
+        
+        return jsonify({
+            'success': True,
+            'elbow_plot': json.dumps(elbow_fig, cls=plotly.utils.PlotlyJSONEncoder),
+            'silhouette_plot': json.dumps(silhouette_fig, cls=plotly.utils.PlotlyJSONEncoder),
+            'optimal_results': optimal_results
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/train_model', methods=['POST'])
+def train_model():
+    global clustering_results, trained_model, model_scaler, feature_columns
+    if clustering_results is None:
+        return jsonify({'success': False, 'error': 'No clustering results available'})
+    
+    try:
+        df_clustered = clustering_results['df_clustered']
+        features_used = clustering_results['features_used']
+        
+        # Prepare features for training
+        feature_data = df_clustered[features_used].copy()
+        
+        # Add gender encoding if Genre is available
+        if 'Genre' in df_clustered.columns:
+            feature_data['Genre_Male'] = (df_clustered['Genre'] == 'Male').astype(int)
+            feature_data['Genre_Female'] = (df_clustered['Genre'] == 'Female').astype(int)
+        
+        # Store feature columns for later use
+        feature_columns = feature_data.columns.tolist()
+        
+        # Scale features
+        model_scaler = StandardScaler()
+        X_scaled = model_scaler.fit_transform(feature_data)
+        
+        # Get cluster labels as target
+        y = df_clustered['Cluster'].values
+        
+        # Split data for training and validation
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_scaled, y, test_size=0.2, random_state=42, stratify=y
+        )
+        
+        # Train Random Forest classifier
+        trained_model = RandomForestClassifier(
+            n_estimators=100,
+            random_state=42,
+            max_depth=10,
+            min_samples_split=5,
+            min_samples_leaf=2
+        )
+        
+        trained_model.fit(X_train, y_train)
+        
+        # Calculate accuracy
+        y_pred = trained_model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        
+        # Save model to disk
+        os.makedirs('models', exist_ok=True)
+        with open('models/customer_classifier.pkl', 'wb') as f:
+            pickle.dump({
+                'model': trained_model,
+                'scaler': model_scaler,
+                'feature_columns': feature_columns,
+                'features_used': features_used
+            }, f)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Model trained successfully',
+            'accuracy': accuracy,
+            'feature_columns': feature_columns,
+            'n_features': len(feature_columns)
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/classify_customer', methods=['POST'])
+def classify_customer():
+    global trained_model, model_scaler, feature_columns, clustering_results
+    if trained_model is None or model_scaler is None or feature_columns is None or clustering_results is None:
+        return jsonify({'success': False, 'error': 'No trained model available'})
+    
+    try:
+        customer_data = request.get_json()
+        if not customer_data:
+            return jsonify({'success': False, 'error': 'No customer data provided'})
+        
+        # Prepare customer data for prediction
+        customer_features = {}
+        
+        # Add numerical features
+        for feature in clustering_results['features_used']:
+            if feature in customer_data:
+                customer_features[feature] = customer_data[feature]
+        
+        # Add gender encoding if available
+        if 'Genre' in customer_data:
+            customer_features['Genre_Male'] = 1 if customer_data['Genre'] == 'Male' else 0
+            customer_features['Genre_Female'] = 1 if customer_data['Genre'] == 'Female' else 0
+        
+        # Create feature vector in the same order as training
+        feature_vector = []
+        for col in feature_columns:
+            if col in customer_features:
+                feature_vector.append(customer_features[col])
+            else:
+                feature_vector.append(0)  # Default value for missing features
+        
+        # Scale features
+        feature_vector_array = np.array(feature_vector).reshape(1, -1)
+        feature_vector_scaled = model_scaler.transform(feature_vector_array)
+        
+        # Make prediction
+        predicted_cluster = trained_model.predict(feature_vector_scaled)[0]
+        prediction_proba = trained_model.predict_proba(feature_vector_scaled)[0]
+        confidence = prediction_proba.max()
+        
+        # Get cluster insights
+        insights = get_cluster_insights(clustering_results['df_clustered'], clustering_results['features_used'])
+        cluster_insight = insights.get(predicted_cluster, {})
+        
+        return jsonify({
+            'success': True,
+            'prediction': {
+                'cluster': int(predicted_cluster),
+                'confidence': float(confidence),
+                'profile': cluster_insight.get('profile', f'Cluster {predicted_cluster}'),
+                'characteristics': cluster_insight.get('characteristics', 'No characteristics available'),
+                'strategy': cluster_insight.get('strategy', 'No strategy available'),
+                'probabilities': {f'Cluster {i}': float(prob) for i, prob in enumerate(prediction_proba)}
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/model_status')
+def model_status():
+    return jsonify({
+        'data_loaded': current_data is not None,
+        'clustering_done': clustering_results is not None,
+        'model_trained': trained_model is not None,
+        'feature_columns': feature_columns if feature_columns else []
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
