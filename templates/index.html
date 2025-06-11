@@ -407,6 +407,83 @@
         hr {
             border-color: var(--border-color);
         }
+        
+        /* Enhanced visibility for all text elements */
+        .text-muted {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary-purple);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .badge-secondary {
+            background-color: var(--light-purple);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background-color: var(--gold);
+            color: var(--darker-bg);
+            font-weight: 600;
+        }
+        
+        /* Enhanced visibility for small text elements */
+        small, .small {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        
+        p, li, span, div {
+            color: var(--text-light);
+        }
+        
+        /* Number and digit visibility improvements */
+        .metric-value, .table td, .form-control {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Plot and chart text improvements */
+        .plot-container text {
+            fill: var(--text-light) !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Ensure all Bootstrap text utilities use light colors */
+        .text-primary {
+            color: var(--light-purple) !important;
+        }
+        
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+        
+        .text-success {
+            color: var(--light-gold) !important;
+        }
+        
+        .text-info {
+            color: var(--light-purple) !important;
+        }
+        
+        .text-warning {
+            color: var(--light-gold) !important;
+        }
+        
+        .text-danger {
+            color: #ff6b6b !important;
+        }
+        
+        /* Strong and bold text visibility */
+        strong, b {
+            color: var(--text-light);
+            font-weight: 700;
+        }
 
     </style>
 </head>
