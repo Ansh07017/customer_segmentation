@@ -40,7 +40,7 @@ python app.py
 ```
 
 5. **Access Dashboard**
-Open browser: `http://localhost:5000`
+Open browser: `http://127.0.0.1:5000`
 
 ## VS Code Configuration
 
@@ -85,29 +85,19 @@ shopper-insights/
     └── rf_classifier.pkl    # Classification model
 ```
 
-## Production Deployment Options
+## Local Development Only
 
-### Option 1: Cloud Platforms
-- **Heroku**: Easy deployment with buildpacks
-- **AWS**: EC2 + Elastic Beanstalk
-- **Google Cloud**: App Engine
-- **Azure**: Web Apps
+This application is configured for local development only on `127.0.0.1:5000`. 
 
-### Option 2: Docker Deployment
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY . .
-RUN pip install -r requirements.txt
-EXPOSE 5000
-CMD ["python", "app.py"]
+### Running the Application
+```bash
+python app.py
 ```
 
-### Option 3: Traditional Server
-- Install Python and dependencies
-- Use Gunicorn/uWSGI for production WSGI
-- Configure Nginx as reverse proxy
-- Set up SSL certificates
+The server will start on `http://127.0.0.1:5000` and is accessible locally only.
+
+### VS Code Debug Configuration
+Use F5 to start debugging with the included configuration that targets the local server.
 
 ## Troubleshooting
 

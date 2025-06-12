@@ -96,7 +96,7 @@ python app.py
 ```
 
 5. **Access Dashboard**
-Open browser to: `http://localhost:5000`
+Open browser to: `http://127.0.0.1:5000`
 
 ### VS Code Extensions (Recommended)
 - Python
