@@ -596,4 +596,7 @@ def model_status():
 if __name__ == '__main__':
     # Initialize the application with pre-trained model
     initialize_app()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Configure for Replit hosting
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
