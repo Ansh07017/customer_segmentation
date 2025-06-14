@@ -17,6 +17,9 @@ def create_cluster_visualization(df_clustered, features):
     Returns:
         plotly.graph_objects.Figure: Cluster visualization
     """
+    # Silver color palette
+    silver_colors = ['#C0C0C0', '#A8A8A8', '#D3D3D3', '#B8B8B8', '#E8E8E8', '#9E9E9E', '#BEBEBE', '#DCDCDC']
+    
     if len(features) == 2:
         # 2D scatter plot
         fig = px.scatter(
@@ -26,7 +29,7 @@ def create_cluster_visualization(df_clustered, features):
             color='Cluster',
             title=f'Customer Clusters: {features[0]} vs {features[1]}',
             hover_data=['CustomerID'] if 'CustomerID' in df_clustered.columns else None,
-            color_discrete_sequence=px.colors.qualitative.Set1
+            color_discrete_sequence=silver_colors
         )
         
         # Add cluster centers if available
@@ -36,7 +39,7 @@ def create_cluster_visualization(df_clustered, features):
                 x=centroids[features[0]],
                 y=centroids[features[1]],
                 mode='markers',
-                marker=dict(size=15, color='black', symbol='x', line=dict(width=2, color='white')),
+                marker=dict(size=15, color='#2F2F2F', symbol='x', line=dict(width=3, color='white')),
                 name='Centroids',
                 showlegend=True
             )
@@ -51,7 +54,7 @@ def create_cluster_visualization(df_clustered, features):
             color='Cluster',
             title=f'Customer Clusters: {features[0]} vs {features[1]} vs {features[2]}',
             hover_data=['CustomerID'] if 'CustomerID' in df_clustered.columns else None,
-            color_discrete_sequence=px.colors.qualitative.Set1
+            color_discrete_sequence=silver_colors
         )
         
         # Add cluster centers
@@ -62,7 +65,7 @@ def create_cluster_visualization(df_clustered, features):
                 y=centroids[features[1]],
                 z=centroids[features[2]],
                 mode='markers',
-                marker=dict(size=10, color='black', symbol='x'),
+                marker=dict(size=10, color='#2F2F2F', symbol='x'),
                 name='Centroids',
                 showlegend=True
             )
@@ -74,12 +77,20 @@ def create_cluster_visualization(df_clustered, features):
             df_clustered[feature_cols],
             color='Cluster',
             title='Customer Clusters - Parallel Coordinates',
-            color_discrete_sequence=px.colors.qualitative.Set1
+            color_discrete_sequence=silver_colors
         )
     
+    # Apply dark theme with silver accents
     fig.update_layout(
         height=600,
-        showlegend=True
+        showlegend=True,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white', size=12),
+        title=dict(font=dict(color='white', size=16)),
+        xaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white'),
+        yaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white'),
+        legend=dict(font=dict(color='white'))
     )
     
     return fig
