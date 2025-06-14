@@ -1159,7 +1159,7 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>Cluster Distribution (Pie Chart)</h5>
+                                    <h5>Customer Segment Distribution</h5>
                                 </div>
                                 <div class="card-body">
                                     <div id="cluster-pie-plot" class="plot-container"></div>
@@ -1169,10 +1169,33 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>Cluster Sizes (Bar Chart)</h5>
+                                    <h5>Segment Sizes & Percentages</h5>
                                 </div>
                                 <div class="card-body">
                                     <div id="cluster-bar-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Customer Segment Profiles</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="cluster-radar-plot" class="plot-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Feature Importance Analysis</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="feature-importance-plot" class="plot-container"></div>
                                 </div>
                             </div>
                         </div>
@@ -1185,6 +1208,14 @@
                 Plotly.newPlot('cluster-viz-plot', JSON.parse(results.cluster_visualization).data, JSON.parse(results.cluster_visualization).layout);
                 Plotly.newPlot('cluster-pie-plot', JSON.parse(results.cluster_pie).data, JSON.parse(results.cluster_pie).layout);
                 Plotly.newPlot('cluster-bar-plot', JSON.parse(results.cluster_bar).data, JSON.parse(results.cluster_bar).layout);
+                
+                // Plot new meaningful visualizations
+                if (results.cluster_radar) {
+                    Plotly.newPlot('cluster-radar-plot', JSON.parse(results.cluster_radar).data, JSON.parse(results.cluster_radar).layout);
+                }
+                if (results.feature_importance) {
+                    Plotly.newPlot('feature-importance-plot', JSON.parse(results.feature_importance).data, JSON.parse(results.feature_importance).layout);
+                }
             }
 
             function displayClusterAnalysis(response) {

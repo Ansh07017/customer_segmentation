@@ -305,19 +305,130 @@ def api_perform_clustering():
         # Cluster distribution
         cluster_counts = clustering_results['df_clustered']['Cluster'].value_counts().sort_index()
         
-        # Pie chart for cluster distribution
+        # Create meaningful cluster labels based on insights
+        cluster_labels = []
+        for i in cluster_counts.index:
+            if str(i) in insights:
+                profile = insights[str(i)].get('profile', f'Cluster {i}')
+                cluster_labels.append(f"{profile} ({cluster_counts[i]} customers)")
+            else:
+                cluster_labels.append(f"Cluster {i} ({cluster_counts[i]} customers)")
+        
+        # Silver color palette
+        silver_colors = ['#C0C0C0', '#A8A8A8', '#D3D3D3', '#B8B8B8', '#E8E8E8']
+        
+        # Enhanced Pie chart with meaningful labels
         pie_fig = px.pie(
             values=cluster_counts.values,
-            names=[f"Cluster {i}" for i in cluster_counts.index],
-            title="Customer Distribution by Cluster"
+            names=cluster_labels,
+            title="Customer Segment Distribution",
+            color_discrete_sequence=silver_colors
         )
         
-        # Bar chart for cluster sizes
-        bar_fig = px.bar(
-            x=[f"Cluster {i}" for i in cluster_counts.index],
-            y=cluster_counts.values,
-            title="Number of Customers per Cluster"
+        pie_fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white', size=12),
+            title=dict(font=dict(color='white', size=16)),
+            legend=dict(font=dict(color='white', size=10))
         )
+        
+        # Enhanced Bar chart with percentages
+        percentages = [(count / len(clustering_results['df_clustered'])) * 100 for count in cluster_counts.values]
+        bar_labels = [f"Segment {i+1}" for i in range(len(cluster_counts))]
+        
+        bar_fig = px.bar(
+            x=bar_labels,
+            y=cluster_counts.values,
+            title="Customer Segment Sizes",
+            color=cluster_counts.values,
+            color_continuous_scale=['#E8E8E8', '#C0C0C0', '#A8A8A8', '#9E9E9E', '#808080'],
+            text=[f"{count}<br>({pct:.1f}%)" for count, pct in zip(cluster_counts.values, percentages)]
+        )
+        
+        bar_fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white', size=12),
+            title=dict(font=dict(color='white', size=16)),
+            xaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white'),
+            yaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white', title='Number of Customers'),
+            showlegend=False
+        )
+        
+        bar_fig.update_traces(textposition='inside', textfont_color='white')
+        
+        # Create cluster comparison chart showing feature averages
+        cluster_stats = clustering_results['df_clustered'].groupby('Cluster')[features].mean().reset_index()
+        
+        # Create radar chart for cluster profiles
+        from plotly.subplots import make_subplots
+        import plotly.graph_objects as go
+        
+        radar_fig = go.Figure()
+        
+        for idx, cluster_id in enumerate(cluster_stats['Cluster']):
+            values = []
+            for feature in features:
+                # Normalize values to 0-100 scale for better visualization
+                feature_values = clustering_results['df_clustered'][feature]
+                normalized_val = ((cluster_stats.loc[cluster_stats['Cluster'] == cluster_id, feature].iloc[0] - feature_values.min()) / 
+                                (feature_values.max() - feature_values.min())) * 100
+                values.append(normalized_val)
+            
+            # Close the radar chart
+            values.append(values[0])
+            feature_labels = features + [features[0]]
+            
+            radar_fig.add_trace(go.Scatterpolar(
+                r=values,
+                theta=feature_labels,
+                fill='toself',
+                name=f'Segment {cluster_id + 1}',
+                line_color=silver_colors[idx % len(silver_colors)],
+                fillcolor=silver_colors[idx % len(silver_colors)],
+                opacity=0.6
+            ))
+        
+        radar_fig.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 100],
+                    color='white'
+                ),
+                angularaxis=dict(color='white')
+            ),
+            showlegend=True,
+            title="Customer Segment Profiles",
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white', size=12),
+            title_font=dict(color='white', size=16),
+            legend=dict(font=dict(color='white'))
+        )
+        
+        # Create feature importance chart
+        feature_importance_fig = px.bar(
+            x=features,
+            y=[clustering_results['df_clustered'][feature].std() for feature in features],
+            title="Feature Variation Across Clusters",
+            color=[clustering_results['df_clustered'][feature].std() for feature in features],
+            color_continuous_scale=['#E8E8E8', '#C0C0C0', '#A8A8A8'],
+            text=[f"{clustering_results['df_clustered'][feature].std():.1f}" for feature in features]
+        )
+        
+        feature_importance_fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white', size=12),
+            title=dict(font=dict(color='white', size=16)),
+            xaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white'),
+            yaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white', title='Standard Deviation'),
+            showlegend=False
+        )
+        
+        feature_importance_fig.update_traces(textposition='outside', textfont_color='white')
         
         return jsonify({
             'success': True,
@@ -327,6 +438,8 @@ def api_perform_clustering():
                 'cluster_visualization': json.dumps(cluster_viz, cls=plotly.utils.PlotlyJSONEncoder),
                 'cluster_pie': json.dumps(pie_fig, cls=plotly.utils.PlotlyJSONEncoder),
                 'cluster_bar': json.dumps(bar_fig, cls=plotly.utils.PlotlyJSONEncoder),
+                'cluster_radar': json.dumps(radar_fig, cls=plotly.utils.PlotlyJSONEncoder),
+                'feature_importance': json.dumps(feature_importance_fig, cls=plotly.utils.PlotlyJSONEncoder),
                 'insights': insights,
                 'cluster_counts': cluster_counts.to_dict(),
                 'features_used': features,
