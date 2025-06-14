@@ -66,13 +66,22 @@ def create_age_distribution(df):
     
     fig.update_layout(
         showlegend=False,
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white')
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
@@ -100,13 +109,22 @@ def create_income_distribution(df):
     
     fig.update_layout(
         showlegend=False,
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white')
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
@@ -134,13 +152,22 @@ def create_spending_distribution(df):
     
     fig.update_layout(
         showlegend=False,
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white')
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
@@ -157,11 +184,12 @@ def create_gender_distribution(df):
     )
     
     fig.update_layout(
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16))
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        margin=dict(l=40, r=40, t=60, b=40)
     )
     
     return fig
@@ -179,13 +207,22 @@ def create_gender_income_analysis(df):
     
     fig.update_layout(
         showlegend=False,
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white')
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
@@ -203,13 +240,22 @@ def create_gender_spending_analysis(df):
     
     fig.update_layout(
         showlegend=False,
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white')
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
