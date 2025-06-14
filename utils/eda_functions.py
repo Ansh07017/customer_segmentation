@@ -273,14 +273,28 @@ def create_age_income_scatter(df):
     )
     
     fig.update_layout(
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        legend=dict(font=dict(color='white'))
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        legend=dict(
+            font=dict(color='#ffffff', size=10), 
+            bgcolor='rgba(42, 31, 61, 0.9)',
+            bordercolor='rgba(111, 66, 193, 0.3)',
+            borderwidth=1
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
@@ -298,14 +312,28 @@ def create_age_spending_scatter(df):
     )
     
     fig.update_layout(
-        height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white', size=12),
-        title=dict(font=dict(color='white', size=16)),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.2)', color='white'),
-        legend=dict(font=dict(color='white'))
+        height=380,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#f3f4f6', size=11),
+        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        xaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        yaxis=dict(
+            gridcolor='rgba(111, 66, 193, 0.2)', 
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=12)
+        ),
+        legend=dict(
+            font=dict(color='#ffffff', size=10), 
+            bgcolor='rgba(42, 31, 61, 0.9)',
+            bordercolor='rgba(111, 66, 193, 0.3)',
+            borderwidth=1
+        ),
+        margin=dict(l=50, r=50, t=60, b=50)
     )
     
     return fig
