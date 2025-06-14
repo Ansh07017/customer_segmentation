@@ -326,11 +326,18 @@ def api_perform_clustering():
         )
         
         pie_fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white', size=12),
-            title=dict(font=dict(color='white', size=16)),
-            legend=dict(font=dict(color='white', size=10))
+            height=400,
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            font=dict(color='#f3f4f6', size=11),
+            title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+            legend=dict(
+                font=dict(color='#ffffff', size=10), 
+                bgcolor='rgba(42, 31, 61, 0.9)',
+                bordercolor='rgba(111, 66, 193, 0.3)',
+                borderwidth=1
+            ),
+            margin=dict(l=40, r=40, t=60, b=40)
         )
         
         # Enhanced Bar chart with percentages
@@ -347,13 +354,24 @@ def api_perform_clustering():
         )
         
         bar_fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white', size=12),
-            title=dict(font=dict(color='white', size=16)),
-            xaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white'),
-            yaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white', title='Number of Customers'),
-            showlegend=False
+            height=400,
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            font=dict(color='#f3f4f6', size=11),
+            title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+            xaxis=dict(
+                gridcolor='rgba(111, 66, 193, 0.2)', 
+                color='#ffffff',
+                title_font=dict(color='#ffffff', size=12)
+            ),
+            yaxis=dict(
+                gridcolor='rgba(111, 66, 193, 0.2)', 
+                color='#ffffff', 
+                title='Number of Customers',
+                title_font=dict(color='#ffffff', size=12)
+            ),
+            showlegend=False,
+            margin=dict(l=50, r=50, t=60, b=50)
         )
         
         bar_fig.update_traces(textposition='inside', textfont_color='white')
@@ -391,21 +409,29 @@ def api_perform_clustering():
             ))
         
         radar_fig.update_layout(
+            height=450,
             polar=dict(
                 radialaxis=dict(
                     visible=True,
                     range=[0, 100],
-                    color='white'
+                    color='#ffffff',
+                    gridcolor='rgba(111, 66, 193, 0.3)'
                 ),
-                angularaxis=dict(color='white')
+                angularaxis=dict(color='#ffffff'),
+                bgcolor='rgba(26, 22, 37, 0.5)'
             ),
             showlegend=True,
-            title="Customer Segment Profiles",
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white', size=12),
-            title_font=dict(color='white', size=16),
-            legend=dict(font=dict(color='white'))
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            font=dict(color='#f3f4f6', size=11),
+            title=dict(text="Customer Segment Profiles", font=dict(color='#ffffff', size=15, family='Arial Black')),
+            legend=dict(
+                font=dict(color='#ffffff', size=10), 
+                bgcolor='rgba(42, 31, 61, 0.9)',
+                bordercolor='rgba(111, 66, 193, 0.3)',
+                borderwidth=1
+            ),
+            margin=dict(l=40, r=40, t=60, b=40)
         )
         
         # Create feature importance chart
@@ -419,13 +445,24 @@ def api_perform_clustering():
         )
         
         feature_importance_fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white', size=12),
-            title=dict(font=dict(color='white', size=16)),
-            xaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white'),
-            yaxis=dict(gridcolor='rgba(192,192,192,0.2)', color='white', title='Standard Deviation'),
-            showlegend=False
+            height=400,
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            font=dict(color='#f3f4f6', size=11),
+            title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+            xaxis=dict(
+                gridcolor='rgba(111, 66, 193, 0.2)', 
+                color='#ffffff',
+                title_font=dict(color='#ffffff', size=12)
+            ),
+            yaxis=dict(
+                gridcolor='rgba(111, 66, 193, 0.2)', 
+                color='#ffffff', 
+                title='Standard Deviation',
+                title_font=dict(color='#ffffff', size=12)
+            ),
+            showlegend=False,
+            margin=dict(l=50, r=50, t=60, b=50)
         )
         
         feature_importance_fig.update_traces(textposition='outside', textfont_color='white')
