@@ -51,7 +51,7 @@ def create_age_distribution(df):
         nbins=20,
         title='Age Distribution of Customers',
         labels={'Age': 'Age (years)', 'count': 'Number of Customers'},
-        color_discrete_sequence=['#9b59d0']
+        color_discrete_sequence=['#FF6B6B']
     )
     
     # Add mean line
@@ -59,7 +59,7 @@ def create_age_distribution(df):
     fig.add_vline(
         x=mean_age, 
         line_dash="dash", 
-        line_color="#fbbf24",
+        line_color="#FFEAA7",
         annotation_text=f"Mean: {mean_age:.1f}",
         annotation_position="top"
     )
@@ -85,7 +85,7 @@ def create_income_distribution(df):
         nbins=20,
         title='Annual Income Distribution',
         labels={'Annual Income (k$)': 'Annual Income (k$)', 'count': 'Number of Customers'},
-        color_discrete_sequence=['#fbbf24']
+        color_discrete_sequence=['#4ECDC4']
     )
     
     # Add mean line
@@ -93,7 +93,7 @@ def create_income_distribution(df):
     fig.add_vline(
         x=mean_income, 
         line_dash="dash", 
-        line_color="#9b59d0",
+        line_color="#FFEAA7",
         annotation_text=f"Mean: ${mean_income:.1f}k",
         annotation_position="top"
     )
@@ -119,7 +119,7 @@ def create_spending_distribution(df):
         nbins=20,
         title='Spending Score Distribution',
         labels={'Spending Score (1-100)': 'Spending Score', 'count': 'Number of Customers'},
-        color_discrete_sequence=['#b983e0']
+        color_discrete_sequence=['#45B7D1']
     )
     
     # Add mean line
