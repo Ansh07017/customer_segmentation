@@ -314,15 +314,15 @@ def api_perform_clustering():
             else:
                 cluster_labels.append(f"Cluster {i} ({cluster_counts[i]} customers)")
         
-        # Silver color palette
-        silver_colors = ['#C0C0C0', '#A8A8A8', '#D3D3D3', '#B8B8B8', '#E8E8E8']
+        # Dark-toned colorful palette
+        dark_colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#F0A500', '#74B9FF']
         
         # Enhanced Pie chart with meaningful labels
         pie_fig = px.pie(
             values=cluster_counts.values,
             names=cluster_labels,
             title="Customer Segment Distribution",
-            color_discrete_sequence=silver_colors
+            color_discrete_sequence=dark_colors
         )
         
         pie_fig.update_layout(
@@ -342,7 +342,7 @@ def api_perform_clustering():
             y=cluster_counts.values,
             title="Customer Segment Sizes",
             color=cluster_counts.values,
-            color_continuous_scale=['#E8E8E8', '#C0C0C0', '#A8A8A8', '#9E9E9E', '#808080'],
+            color_continuous_scale=px.colors.sequential.Viridis,
             text=[f"{count}<br>({pct:.1f}%)" for count, pct in zip(cluster_counts.values, percentages)]
         )
         
@@ -385,8 +385,8 @@ def api_perform_clustering():
                 theta=feature_labels,
                 fill='toself',
                 name=f'Segment {cluster_id + 1}',
-                line_color=silver_colors[idx % len(silver_colors)],
-                fillcolor=silver_colors[idx % len(silver_colors)],
+                line_color=dark_colors[idx % len(dark_colors)],
+                fillcolor=dark_colors[idx % len(dark_colors)],
                 opacity=0.6
             ))
         
@@ -414,7 +414,7 @@ def api_perform_clustering():
             y=[clustering_results['df_clustered'][feature].std() for feature in features],
             title="Feature Variation Across Clusters",
             color=[clustering_results['df_clustered'][feature].std() for feature in features],
-            color_continuous_scale=['#E8E8E8', '#C0C0C0', '#A8A8A8'],
+            color_continuous_scale=px.colors.sequential.Plasma,
             text=[f"{clustering_results['df_clustered'][feature].std():.1f}" for feature in features]
         )
         
