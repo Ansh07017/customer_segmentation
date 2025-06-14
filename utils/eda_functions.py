@@ -127,7 +127,7 @@ def create_spending_distribution(df):
     fig.add_vline(
         x=mean_spending, 
         line_dash="dash", 
-        line_color="#fbbf24",
+        line_color="#FFEAA7",
         annotation_text=f"Mean: {mean_spending:.1f}",
         annotation_position="top"
     )
@@ -153,7 +153,7 @@ def create_gender_distribution(df):
         values=gender_counts.values,
         names=gender_counts.index,
         title='Gender Distribution',
-        color_discrete_sequence=['#9b59d0', '#fbbf24']
+        color_discrete_sequence=['#FF6B6B', '#4ECDC4']
     )
     
     fig.update_layout(
@@ -174,7 +174,7 @@ def create_gender_income_analysis(df):
         y='Annual Income (k$)',
         title='Income Distribution by Gender',
         color='Genre',
-        color_discrete_sequence=['#9b59d0', '#fbbf24']
+        color_discrete_sequence=['#FF6B6B', '#4ECDC4']
     )
     
     fig.update_layout(
@@ -198,7 +198,7 @@ def create_gender_spending_analysis(df):
         y='Spending Score (1-100)',
         title='Spending Score Distribution by Gender',
         color='Genre',
-        color_discrete_sequence=['#9b59d0', '#fbbf24']
+        color_discrete_sequence=['#45B7D1', '#96CEB4']
     )
     
     fig.update_layout(
@@ -223,7 +223,7 @@ def create_age_income_scatter(df):
         color='Genre',
         title='Age vs Annual Income',
         hover_data=['Spending Score (1-100)'],
-        color_discrete_sequence=['#9b59d0', '#fbbf24']
+        color_discrete_sequence=['#FFEAA7', '#DDA0DD']
     )
     
     fig.update_layout(
@@ -248,7 +248,7 @@ def create_age_spending_scatter(df):
         color='Genre',
         title='Age vs Spending Score',
         hover_data=['Annual Income (k$)'],
-        color_discrete_sequence=['#9b59d0', '#fbbf24']
+        color_discrete_sequence=['#F0A500', '#74B9FF']
     )
     
     fig.update_layout(
