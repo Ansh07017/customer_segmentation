@@ -3,18 +3,11 @@
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.formatting.provider": "black",
-    "python.analysis.autoImportCompletions": true,
+    "python.terminal.activateEnvironment": true,
     "files.associations": {
-        "*.html": "html",
-        "*.css": "css",
-        "*.js": "javascript"
+        "*.html": "html"
     },
     "emmet.includeLanguages": {
         "html": "html"
-    },
-    "editor.formatOnSave": true,
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "python.linting.flake8Enabled": false,
-    "python.analysis.typeCheckingMode": "basic"
+    }
 }
