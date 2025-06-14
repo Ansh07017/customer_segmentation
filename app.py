@@ -326,18 +326,18 @@ def api_perform_clustering():
         )
         
         pie_fig.update_layout(
-            height=400,
+            height=550,
             plot_bgcolor='rgba(26, 22, 37, 0.8)',
             paper_bgcolor='rgba(26, 22, 37, 0.8)',
-            font=dict(color='#f3f4f6', size=11),
-            title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+            font=dict(color='#f3f4f6', size=12),
+            title=dict(font=dict(color='#ffffff', size=16, family='Arial Black')),
             legend=dict(
-                font=dict(color='#ffffff', size=10), 
+                font=dict(color='#ffffff', size=11), 
                 bgcolor='rgba(42, 31, 61, 0.9)',
                 bordercolor='rgba(111, 66, 193, 0.3)',
                 borderwidth=1
             ),
-            margin=dict(l=40, r=40, t=60, b=40)
+            margin=dict(l=60, r=60, t=80, b=60)
         )
         
         # Enhanced Bar chart with percentages

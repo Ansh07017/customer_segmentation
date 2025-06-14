@@ -184,12 +184,12 @@ def create_gender_distribution(df):
     )
     
     fig.update_layout(
-        height=380,
+        height=550,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
-        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
-        margin=dict(l=40, r=40, t=60, b=40)
+        font=dict(color='#f3f4f6', size=12),
+        title=dict(font=dict(color='#ffffff', size=16, family='Arial Black')),
+        margin=dict(l=60, r=60, t=80, b=60)
     )
     
     return fig
