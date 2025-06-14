@@ -20,26 +20,31 @@ def create_cluster_visualization(df_clustered, features):
     # Silver color palette
     silver_colors = ['#C0C0C0', '#A8A8A8', '#D3D3D3', '#B8B8B8', '#E8E8E8', '#9E9E9E', '#BEBEBE', '#DCDCDC']
     
+    # Ensure Cluster column is string for proper color mapping
+    df_viz = df_clustered.copy()
+    df_viz['Cluster'] = df_viz['Cluster'].astype(str)
+    
     if len(features) == 2:
         # 2D scatter plot
         fig = px.scatter(
-            df_clustered,
+            df_viz,
             x=features[0],
             y=features[1],
             color='Cluster',
             title=f'Customer Clusters: {features[0]} vs {features[1]}',
-            hover_data=['CustomerID'] if 'CustomerID' in df_clustered.columns else None,
-            color_discrete_sequence=silver_colors
+            hover_data=['CustomerID'] if 'CustomerID' in df_viz.columns else None,
+            color_discrete_sequence=silver_colors,
+            opacity=0.7
         )
         
         # Add cluster centers if available
-        if 'Cluster' in df_clustered.columns:
+        if 'Cluster' in df_viz.columns:
             centroids = df_clustered.groupby('Cluster')[features].mean().reset_index()
             fig.add_scatter(
                 x=centroids[features[0]],
                 y=centroids[features[1]],
                 mode='markers',
-                marker=dict(size=15, color='#2F2F2F', symbol='x', line=dict(width=3, color='white')),
+                marker=dict(size=20, color='#2F2F2F', symbol='x', line=dict(width=3, color='white')),
                 name='Centroids',
                 showlegend=True
             )
@@ -47,25 +52,26 @@ def create_cluster_visualization(df_clustered, features):
     elif len(features) == 3:
         # 3D scatter plot
         fig = px.scatter_3d(
-            df_clustered,
+            df_viz,
             x=features[0],
             y=features[1],
             z=features[2],
             color='Cluster',
             title=f'Customer Clusters: {features[0]} vs {features[1]} vs {features[2]}',
-            hover_data=['CustomerID'] if 'CustomerID' in df_clustered.columns else None,
-            color_discrete_sequence=silver_colors
+            hover_data=['CustomerID'] if 'CustomerID' in df_viz.columns else None,
+            color_discrete_sequence=silver_colors,
+            opacity=0.7
         )
         
         # Add cluster centers
-        if 'Cluster' in df_clustered.columns:
+        if 'Cluster' in df_viz.columns:
             centroids = df_clustered.groupby('Cluster')[features].mean().reset_index()
             fig.add_scatter3d(
                 x=centroids[features[0]],
                 y=centroids[features[1]],
                 z=centroids[features[2]],
                 mode='markers',
-                marker=dict(size=10, color='#2F2F2F', symbol='x'),
+                marker=dict(size=15, color='#2F2F2F', symbol='x'),
                 name='Centroids',
                 showlegend=True
             )
@@ -73,11 +79,12 @@ def create_cluster_visualization(df_clustered, features):
     else:
         # For more than 3 features, create a parallel coordinates plot
         feature_cols = features + ['Cluster']
+        df_parallel = df_viz[feature_cols].copy()
         fig = px.parallel_coordinates(
-            df_clustered[feature_cols],
+            df_parallel,
             color='Cluster',
             title='Customer Clusters - Parallel Coordinates',
-            color_discrete_sequence=silver_colors
+            color_continuous_scale=silver_colors[:5]
         )
     
     # Apply dark theme with silver accents
