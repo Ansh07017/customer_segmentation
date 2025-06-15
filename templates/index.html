@@ -652,7 +652,6 @@
                                 </div>
                             </div>
                             <button class="btn btn-success" id="run-clustering-btn">🚀 Run Clustering Analysis</button>
-                            <button class="btn btn-info ms-2" id="train-model-btn">🎯 Train Classification Model</button>
                         </div>
                         <div class="loading" id="clustering-loading">
                             <div class="spinner-border" role="status"></div>
@@ -868,15 +867,7 @@
                 });
             });
 
-            // Train model - now just shows that model is already trained
-            $('#train-model-btn').click(function() {
-                $('#clustering-content').append(`
-                    <div class="alert alert-info mt-3">
-                        <strong>Model Status:</strong> Classification model is pre-trained and ready for use!<br>
-                        <small>Accuracy: 99.5% on Mall Customers dataset</small>
-                    </div>
-                `);
-            });
+
 
             // Classify customer
             $('#classify-btn').click(function() {
