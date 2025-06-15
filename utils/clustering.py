@@ -319,7 +319,7 @@ def calculate_optimal_clusters(df, features, max_clusters=10, scale_features=Tru
     k_range = range(2, max_clusters + 1)
     
     for k in k_range:
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init='auto')
         cluster_labels = kmeans.fit_predict(X_scaled)
         
         # Calculate WCSS
