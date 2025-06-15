@@ -22,90 +22,142 @@ def create_cluster_visualization(df_clustered, features):
     
     # Ensure we have the data and cluster column
     if df_clustered is None or df_clustered.empty:
-        return go.Figure().add_annotation(text="No data available", xref="paper", yref="paper", x=0.5, y=0.5)
+        fig = go.Figure()
+        fig.add_annotation(text="No data available", xref="paper", yref="paper", x=0.5, y=0.5, 
+                          font=dict(size=16, color='white'))
+        return fig
     
     # Ensure Cluster column exists and is properly formatted
     if 'Cluster' not in df_clustered.columns:
-        return go.Figure().add_annotation(text="No cluster data available", xref="paper", yref="paper", x=0.5, y=0.5)
+        fig = go.Figure()
+        fig.add_annotation(text="No cluster data available", xref="paper", yref="paper", x=0.5, y=0.5,
+                          font=dict(size=16, color='white'))
+        return fig
     
-    df_viz = df_clustered.copy()
-    df_viz['Cluster'] = df_viz['Cluster'].astype(str)
+    # Create a clean copy of the data
+    df_viz = df_clustered.copy().reset_index(drop=True)
+    df_viz['Cluster'] = df_viz['Cluster'].astype(int)
     
     print(f"Creating visualization with {len(df_viz)} data points, {df_viz['Cluster'].nunique()} clusters")
     
-    if len(features) == 2:
-        # 2D scatter plot with all customer data
-        fig = px.scatter(
-            df_viz,
-            x=features[0],
-            y=features[1],
-            color='Cluster',
-            title=f'Customer Clusters: {features[0]} vs {features[1]}',
-            hover_data=['CustomerID'] if 'CustomerID' in df_viz.columns else None,
-            color_discrete_sequence=dark_colors,
-            opacity=0.8,
-            size_max=10
-        )
+    # Create figure manually for better control
+    fig = go.Figure()
+    
+    if len(features) >= 2:
+        # Get unique clusters
+        unique_clusters = sorted(df_viz['Cluster'].unique())
         
-        # Enhance markers for better visibility
-        fig.update_traces(marker=dict(size=10, line=dict(width=2, color='white')))
+        # Add scatter plot for each cluster
+        for i, cluster in enumerate(unique_clusters):
+            cluster_data = df_viz[df_viz['Cluster'] == cluster]
+            print(f"Cluster {cluster}: {len(cluster_data)} data points")
+            
+            # Ensure we have valid data for this cluster
+            if len(cluster_data) > 0:
+                x_vals = cluster_data[features[0]].values
+                y_vals = cluster_data[features[1]].values
+                
+                fig.add_trace(go.Scatter(
+                    x=x_vals,
+                    y=y_vals,
+                    mode='markers',
+                    name=f'Cluster {cluster}',
+                    marker=dict(
+                        size=10,
+                        color=dark_colors[i % len(dark_colors)],
+                        line=dict(width=2, color='white'),
+                        opacity=0.8
+                    ),
+                    hovertemplate=f'<b>Cluster {cluster}</b><br>' +
+                                 f'{features[0]}: %{{x}}<br>' +
+                                 f'{features[1]}: %{{y}}<extra></extra>'
+                ))
         
         # Add cluster centers
         centroids = df_clustered.groupby('Cluster')[features].mean().reset_index()
         
         for idx, row in centroids.iterrows():
-            fig.add_scatter(
+            fig.add_trace(go.Scatter(
                 x=[row[features[0]]],
                 y=[row[features[1]]],
                 mode='markers',
+                name=f'Centroid {int(row["Cluster"])}',
                 marker=dict(
-                    size=25, 
-                    color='black', 
-                    symbol='x-thin', 
+                    size=25,
+                    color='black',
+                    symbol='x',
                     line=dict(width=4, color='white')
                 ),
-                name=f'Centroid {int(row["Cluster"])}',
                 showlegend=True
-            )
+            ))
+        
+        # Update layout for 2D plot
+        fig.update_layout(
+            title=f'Customer Clusters: {features[0]} vs {features[1]}',
+            xaxis_title=features[0],
+            yaxis_title=features[1]
+        )
         
     elif len(features) == 3:
-        # 3D scatter plot
-        fig = px.scatter_3d(
-            df_viz,
-            x=features[0],
-            y=features[1],
-            z=features[2],
-            color='Cluster',
-            title=f'Customer Clusters: {features[0]} vs {features[1]} vs {features[2]}',
-            hover_data=['CustomerID'] if 'CustomerID' in df_viz.columns else None,
-            color_discrete_sequence=dark_colors,
-            opacity=0.8
-        )
+        # 3D scatter plot using manual traces for better control
+        unique_clusters = sorted(df_viz['Cluster'].unique())
+        
+        for i, cluster in enumerate(unique_clusters):
+            cluster_data = df_viz[df_viz['Cluster'] == cluster]
+            
+            fig.add_trace(go.Scatter3d(
+                x=cluster_data[features[0]].values,
+                y=cluster_data[features[1]].values,
+                z=cluster_data[features[2]].values,
+                mode='markers',
+                name=f'Cluster {cluster}',
+                marker=dict(
+                    size=8,
+                    color=dark_colors[i % len(dark_colors)],
+                    line=dict(width=1, color='white'),
+                    opacity=0.8
+                )
+            ))
         
         # Add cluster centers
         centroids = df_clustered.groupby('Cluster')[features].mean().reset_index()
-        fig.add_scatter3d(
-            x=centroids[features[0]],
-            y=centroids[features[1]],
-            z=centroids[features[2]],
-            mode='markers',
-            marker=dict(size=20, color='black', symbol='x'),
-            name='Centroids',
-            showlegend=True
+        for idx, row in centroids.iterrows():
+            fig.add_trace(go.Scatter3d(
+                x=[row[features[0]]],
+                y=[row[features[1]]],
+                z=[row[features[2]]],
+                mode='markers',
+                name=f'Centroid {int(row["Cluster"])}',
+                marker=dict(size=20, color='black', symbol='x'),
+                showlegend=True
+            ))
+        
+        fig.update_layout(
+            title=f'Customer Clusters: {features[0]} vs {features[1]} vs {features[2]}',
+            scene=dict(
+                xaxis_title=features[0],
+                yaxis_title=features[1],
+                zaxis_title=features[2]
+            )
         )
     
     else:
         # For more than 3 features, create a parallel coordinates plot
         feature_cols = features + ['Cluster']
         df_parallel = df_viz[feature_cols].copy()
-        # Convert cluster to numeric for parallel coordinates
-        df_parallel['Cluster'] = df_parallel['Cluster'].astype(int)
-        fig = px.parallel_coordinates(
-            df_parallel,
-            color='Cluster',
-            title='Customer Clusters - Parallel Coordinates',
-            color_continuous_scale=px.colors.qualitative.Dark24
+        
+        fig = go.Figure(data=
+            go.Parcoords(
+                line=dict(color=df_parallel['Cluster'],
+                         colorscale='Viridis',
+                         showscale=True),
+                dimensions=list([
+                    dict(range=[df_parallel[col].min(), df_parallel[col].max()],
+                         label=col, values=df_parallel[col]) for col in features
+                ])
+            )
         )
+        fig.update_layout(title='Customer Clusters - Parallel Coordinates')
     
     # Apply dark theme with enhanced visibility
     fig.update_layout(
