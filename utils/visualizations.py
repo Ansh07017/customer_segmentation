@@ -138,53 +138,65 @@ def create_correlation_heatmap(df):
     # Create text annotations for the heatmap
     text_values = [[f"{val:.2f}" for val in row] for row in z_values]
     
-    # Create the heatmap
+    # Create the heatmap with enhanced visibility
     fig = go.Figure(data=go.Heatmap(
         z=z_values,
         x=x_labels,
         y=y_labels,
         text=text_values,
         texttemplate="%{text}",
-        textfont={"size": 16, "color": "white", "family": "Arial Black"},
+        textfont={"size": 18, "color": "#FFFFFF", "family": "Arial Black"},
         colorscale=[
-            [0.0, '#9b59d0'],    # Purple for negative correlation
-            [0.25, '#6b46c1'],   # Darker purple
-            [0.5, '#1f2937'],    # Dark center for neutral
-            [0.75, '#f59e0b'],   # Golden transition
-            [1.0, '#FFD700']     # Bright gold for positive correlation
+            [0.0, '#4c1d95'],    # Deep purple for strong negative
+            [0.2, '#7c3aed'],    # Purple
+            [0.4, '#9b59d0'],    # Light purple  
+            [0.5, '#374151'],    # Dark gray for neutral
+            [0.6, '#f59e0b'],    # Orange-gold transition
+            [0.8, '#fbbf24'],    # Golden yellow
+            [1.0, '#FFD700']     # Bright gold for strong positive
         ],
         zmin=-1,
         zmax=1,
         showscale=True,
+        hoverongaps=False,
         colorbar=dict(
-            title=dict(text="Correlation Coefficient", font=dict(color='#ffffff', size=14, family='Arial Black')),
-            tickfont=dict(color='#ffffff', size=12, family='Arial Black'),
-            thickness=20,
-            len=0.8
+            title=dict(text="Correlation", font=dict(color='#FFD700', size=16, family='Arial Black')),
+            tickfont=dict(color='#FFFFFF', size=14, family='Arial Black'),
+            thickness=25,
+            len=0.9,
+            bgcolor='rgba(26, 22, 37, 0.8)',
+            bordercolor='#FFD700',
+            borderwidth=2
         )
     ))
     
     fig.update_layout(
-        title=dict(text="Feature Correlation Matrix", font=dict(color='#ffffff', size=18, family='Arial Black')),
-        height=500,
-        width=600,
-        plot_bgcolor='rgba(26, 22, 37, 0.8)',
-        paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#ffffff', size=13, family='Arial Black'),
+        title=dict(text="Feature Correlation Matrix", font=dict(color='#FFD700', size=20, family='Arial Black')),
+        height=550,
+        width=650,
+        plot_bgcolor='rgba(15, 15, 25, 1.0)',
+        paper_bgcolor='rgba(15, 15, 25, 1.0)',
+        font=dict(color='#FFFFFF', size=14, family='Arial Black'),
         xaxis=dict(
             title="",
-            color='#ffffff',
-            tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+            color='#FFD700',
+            tickfont=dict(size=14, color='#FFD700', family='Arial Black'),
             side='bottom',
-            tickangle=45
+            tickangle=0,
+            showgrid=False,
+            linecolor='#FFD700',
+            linewidth=2
         ),
         yaxis=dict(
             title="",
-            color='#ffffff',
-            tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
-            autorange='reversed'
+            color='#FFD700',
+            tickfont=dict(size=14, color='#FFD700', family='Arial Black'),
+            autorange='reversed',
+            showgrid=False,
+            linecolor='#FFD700',
+            linewidth=2
         ),
-        margin=dict(l=120, r=80, t=80, b=120)
+        margin=dict(l=150, r=100, t=90, b=120)
     )
     
     return fig
