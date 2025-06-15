@@ -120,18 +120,17 @@ def create_correlation_heatmap(df):
     Returns:
         plotly.graph_objects.Figure: Correlation heatmap
     """
-    # Get all numerical columns from the dataset
-    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    # Use specific columns that we know exist in the Mall dataset
+    numerical_cols = ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
     
-    # Remove CustomerID if present (not useful for correlation)
-    if 'CustomerID' in numerical_cols:
-        numerical_cols.remove('CustomerID')
+    # Verify columns exist in dataframe
+    available_cols = [col for col in numerical_cols if col in df.columns]
     
-    if len(numerical_cols) < 2:
-        # Create a simple message figure if not enough numerical columns
+    if len(available_cols) < 2:
+        # Create a simple message figure
         fig = go.Figure()
         fig.add_annotation(
-            text="Not enough numerical features for correlation analysis",
+            text="Correlation analysis requires at least 2 numerical features",
             xref="paper", yref="paper",
             x=0.5, y=0.5, xanchor='center', yanchor='middle',
             showarrow=False,
@@ -145,64 +144,92 @@ def create_correlation_heatmap(df):
         )
         return fig
     
-    # Calculate correlation matrix for numerical columns
-    correlation_matrix = df[numerical_cols].corr()
-    
-    # Create custom colorscale with golden-purple theme
-    colorscale = [
-        [0.0, '#9b59d0'],    # Purple for negative correlation
-        [0.2, '#6b46c1'],    # Darker purple
-        [0.4, '#2a1e25'],    # Dark center
-        [0.6, '#92400e'],    # Brown-gold transition
-        [0.8, '#fbbf24'],    # Golden yellow
-        [1.0, '#FFD700']     # Bright gold for positive correlation
-    ]
-    
-    # Create heatmap
-    fig = go.Figure(data=go.Heatmap(
-        z=correlation_matrix.values,
-        x=correlation_matrix.columns.tolist(),
-        y=correlation_matrix.columns.tolist(),
-        colorscale=colorscale,
-        zmin=-1,
-        zmax=1,
-        text=np.around(correlation_matrix.values, decimals=2),
-        texttemplate="%{text}",
-        textfont={"size": 14, "color": "white", "family": "Arial Black"},
-        hoverongaps=False,
-        colorbar=dict(
-            title=dict(text="Correlation Coefficient", font=dict(color='#ffffff', size=14, family='Arial Black')),
-            tickfont=dict(color='#ffffff', size=12, family='Arial Black'),
-            thickness=20,
-            len=0.8
-        ),
-        showscale=True
-    ))
-    
-    fig.update_layout(
-        title=dict(text="Feature Correlation Matrix", font=dict(color='#ffffff', size=18, family='Arial Black')),
-        height=500,
-        width=600,
-        plot_bgcolor='rgba(26, 22, 37, 0.8)',
-        paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#ffffff', size=13, family='Arial Black'),
-        xaxis=dict(
-            title="",
-            color='#ffffff',
-            tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
-            side='bottom',
-            tickangle=45
-        ),
-        yaxis=dict(
-            title="",
-            color='#ffffff',
-            tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
-            autorange='reversed'
-        ),
-        margin=dict(l=120, r=80, t=80, b=100)
-    )
-    
-    return fig
+    # Calculate correlation matrix
+    try:
+        corr_data = df[available_cols].corr()
+        
+        # Extract values and create labels
+        corr_values = corr_data.values
+        labels = corr_data.columns.tolist()
+        
+        # Create annotation text
+        annotations = []
+        for i in range(len(labels)):
+            for j in range(len(labels)):
+                annotations.append(
+                    dict(
+                        x=j,
+                        y=i,
+                        text=str(round(corr_values[i][j], 2)),
+                        showarrow=False,
+                        font=dict(color="white", size=14, family="Arial Black")
+                    )
+                )
+        
+        # Create heatmap
+        fig = go.Figure(data=go.Heatmap(
+            z=corr_values,
+            x=labels,
+            y=labels,
+            colorscale=[
+                [0.0, '#9b59d0'],    # Purple for negative
+                [0.3, '#6b46c1'],    # Darker purple
+                [0.5, '#2a1e25'],    # Dark center
+                [0.7, '#f59e0b'],    # Golden transition
+                [1.0, '#FFD700']     # Bright gold for positive
+            ],
+            zmin=-1,
+            zmax=1,
+            showscale=True,
+            colorbar=dict(
+                title="Correlation",
+                titlefont=dict(color='#ffffff', size=14, family='Arial Black'),
+                tickfont=dict(color='#ffffff', size=12, family='Arial Black'),
+                thickness=15
+            )
+        ))
+        
+        # Add annotations
+        fig.update_layout(annotations=annotations)
+        
+        fig.update_layout(
+            title=dict(text="Feature Correlation Matrix", font=dict(color='#ffffff', size=18, family='Arial Black')),
+            height=450,
+            width=500,
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            font=dict(color='#ffffff', size=13, family='Arial Black'),
+            xaxis=dict(
+                color='#ffffff',
+                tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+                side='bottom'
+            ),
+            yaxis=dict(
+                color='#ffffff',
+                tickfont=dict(size=12, color='#ffffff', family='Arial Black')
+            ),
+            margin=dict(l=80, r=60, t=80, b=80)
+        )
+        
+        return fig
+        
+    except Exception as e:
+        # Fallback error figure
+        fig = go.Figure()
+        fig.add_annotation(
+            text=f"Error creating correlation matrix: {str(e)}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5, xanchor='center', yanchor='middle',
+            showarrow=False,
+            font=dict(size=14, color='white')
+        )
+        fig.update_layout(
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            height=400,
+            title=dict(text="Feature Correlation Matrix", font=dict(color='#ffffff', size=18, family='Arial Black'))
+        )
+        return fig
 
 def create_cluster_comparison_charts(df_clustered, features):
     """

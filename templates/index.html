@@ -1115,7 +1115,14 @@
                 Plotly.newPlot('income-dist-plot', JSON.parse(response.plots.income_dist).data, JSON.parse(response.plots.income_dist).layout);
                 Plotly.newPlot('spending-dist-plot', JSON.parse(response.plots.spending_dist).data, JSON.parse(response.plots.spending_dist).layout);
                 Plotly.newPlot('gender-dist-plot', JSON.parse(response.plots.gender_dist).data, JSON.parse(response.plots.gender_dist).layout);
-                Plotly.newPlot('correlation-plot', JSON.parse(response.plots.correlation).data, JSON.parse(response.plots.correlation).layout);
+                try {
+                    const correlationData = JSON.parse(response.plots.correlation);
+                    console.log('Correlation data:', correlationData);
+                    Plotly.newPlot('correlation-plot', correlationData.data, correlationData.layout);
+                } catch (error) {
+                    console.error('Error rendering correlation plot:', error);
+                    document.getElementById('correlation-plot').innerHTML = '<div style="color: white; text-align: center; padding: 50px;">Error loading correlation matrix</div>';
+                }
                 Plotly.newPlot('gender-income-plot', JSON.parse(response.plots.gender_income).data, JSON.parse(response.plots.gender_income).layout);
                 Plotly.newPlot('gender-spending-plot', JSON.parse(response.plots.gender_spending).data, JSON.parse(response.plots.gender_spending).layout);
             }
