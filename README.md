@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Shopper Insights with K-Means
 
 *"Your customers have patterns. We make them visible."*
