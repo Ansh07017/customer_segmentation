@@ -66,9 +66,9 @@ def create_cluster_visualization(df_clustered, features):
                 name=f'Centroid {int(row["Cluster"])}',
                 marker=dict(
                     size=25,
-                    color='black',
+                    color='#FFD700',  # Golden color
                     symbol='x',
-                    line=dict(width=4, color='white')
+                    line=dict(width=4, color='#9b59d0')  # Purple outline
                 ),
                 showlegend=True
             ))
