@@ -138,13 +138,13 @@ def create_correlation_heatmap(df):
     # Calculate correlation matrix
     correlation_matrix = df[numerical_cols].corr()
     
-    # Create heatmap
+    # Create heatmap with golden-purple theme
     fig = px.imshow(
         correlation_matrix,
         labels=dict(x="Features", y="Features", color="Correlation"),
         x=correlation_matrix.columns,
         y=correlation_matrix.columns,
-        color_continuous_scale='RdBu',
+        color_continuous_scale=[[0, '#9b59d0'], [0.5, '#2a1e25'], [1, '#fbbf24']],
         aspect="auto",
         title="Feature Correlation Matrix"
     )
@@ -153,12 +153,31 @@ def create_correlation_heatmap(df):
     fig.update_traces(
         text=np.around(correlation_matrix.values, decimals=2),
         texttemplate="%{text}",
-        textfont={"size": 10}
+        textfont={"size": 12, "color": "white", "family": "Arial Black"}
     )
     
     fig.update_layout(
-        height=500,
-        width=500
+        height=480,
+        width=550,
+        plot_bgcolor='rgba(26, 22, 37, 0.8)',
+        paper_bgcolor='rgba(26, 22, 37, 0.8)',
+        font=dict(color='#ffffff', size=13, family='Arial Black'),
+        title=dict(font=dict(color='#ffffff', size=18, family='Arial Black')),
+        xaxis=dict(
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+            tickfont=dict(size=12, color='#ffffff', family='Arial Black')
+        ),
+        yaxis=dict(
+            color='#ffffff',
+            title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+            tickfont=dict(size=12, color='#ffffff', family='Arial Black')
+        ),
+        coloraxis_colorbar=dict(
+            title=dict(text="Correlation", font=dict(color='#ffffff', size=14, family='Arial Black')),
+            tickfont=dict(color='#ffffff', size=12, family='Arial Black')
+        ),
+        margin=dict(l=60, r=60, t=80, b=60)
     )
     
     return fig
