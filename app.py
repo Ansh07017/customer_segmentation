@@ -300,13 +300,7 @@ def api_perform_clustering():
         insights = get_cluster_insights(clustering_results['df_clustered'], features)
         
         # Create visualization
-        try:
-            cluster_viz = create_cluster_visualization(clustering_results['df_clustered'], features)
-        except Exception as viz_error:
-            print(f"Visualization error: {viz_error}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({'success': False, 'error': f'Visualization error: {str(viz_error)}'})
+        cluster_viz = create_cluster_visualization(clustering_results['df_clustered'], features)
         
         # Cluster distribution
         cluster_counts = clustering_results['df_clustered']['Cluster'].value_counts().sort_index()
@@ -515,9 +509,9 @@ def api_perform_clustering():
             marker=dict(line=dict(color='white', width=2))
         )
         
-        return jsonify({
-            'success': True,
-            'results': {
+        # Try JSON serialization with error handling
+        try:
+            json_results = {
                 'inertia': clustering_results['inertia'],
                 'silhouette_score': clustering_results['silhouette_score'],
                 'cluster_visualization': json.dumps(cluster_viz, cls=plotly.utils.PlotlyJSONEncoder),
@@ -530,6 +524,15 @@ def api_perform_clustering():
                 'features_used': features,
                 'n_clusters': n_clusters
             }
+        except Exception as json_error:
+            import traceback
+            print(f"JSON serialization error: {json_error}")
+            traceback.print_exc()
+            return jsonify({'success': False, 'error': f'JSON error: {str(json_error)}'})
+        
+        return jsonify({
+            'success': True,
+            'results': json_results
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
