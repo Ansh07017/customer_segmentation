@@ -1,13 +1,33 @@
 {
-    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.defaultInterpreterPath": "/usr/bin/python3",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
     "python.formatting.provider": "black",
-    "python.terminal.activateEnvironment": true,
-    "files.associations": {
-        "*.html": "html"
+    "python.formatting.blackArgs": ["--line-length=88"],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
     },
-    "emmet.includeLanguages": {
-        "html": "html"
-    }
+    "files.associations": {
+        "*.py": "python",
+        "*.csv": "csv"
+    },
+    "python.analysis.typeCheckingMode": "basic",
+    "python.terminal.activateEnvironment": false,
+    "workbench.colorTheme": "Dark+ (default dark)",
+    "editor.minimap.enabled": true,
+    "editor.wordWrap": "on",
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    },
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py"
+    ]
 }

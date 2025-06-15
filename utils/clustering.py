@@ -37,7 +37,7 @@ def perform_clustering(df, features, n_clusters, scale_features=True, random_sta
     kmeans = KMeans(
         n_clusters=n_clusters,
         random_state=random_state,
-        n_init=10,
+        n_init='auto',
         max_iter=300
     )
     
@@ -53,7 +53,7 @@ def perform_clustering(df, features, n_clusters, scale_features=True, random_sta
     
     # Get centroids in original scale
     centroids = kmeans.cluster_centers_
-    if scale_features:
+    if scale_features and scaler is not None:
         centroids = scaler.inverse_transform(centroids)
     
     # Create centroids dataframe
