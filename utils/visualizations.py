@@ -120,13 +120,14 @@ def create_correlation_heatmap(df):
     Returns:
         plotly.graph_objects.Figure: Correlation heatmap
     """
-    # Select specific numerical columns for correlation analysis
-    numerical_cols = ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
+    # Get all numerical columns from the dataset
+    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
     
-    # Filter to only columns that exist in the dataframe
-    available_cols = [col for col in numerical_cols if col in df.columns]
+    # Remove CustomerID if present (not useful for correlation)
+    if 'CustomerID' in numerical_cols:
+        numerical_cols.remove('CustomerID')
     
-    if len(available_cols) < 2:
+    if len(numerical_cols) < 2:
         # Create a simple message figure if not enough numerical columns
         fig = go.Figure()
         fig.add_annotation(
@@ -138,47 +139,67 @@ def create_correlation_heatmap(df):
         )
         fig.update_layout(
             plot_bgcolor='rgba(26, 22, 37, 0.8)',
-            paper_bgcolor='rgba(26, 22, 37, 0.8)'
+            paper_bgcolor='rgba(26, 22, 37, 0.8)',
+            height=400,
+            title=dict(text="Feature Correlation Matrix", font=dict(color='#ffffff', size=18, family='Arial Black'))
         )
         return fig
     
-    # Calculate correlation matrix
-    correlation_matrix = df[available_cols].corr()
+    # Calculate correlation matrix for numerical columns
+    correlation_matrix = df[numerical_cols].corr()
     
-    # Create heatmap using go.Heatmap for better control
+    # Create custom colorscale with golden-purple theme
+    colorscale = [
+        [0.0, '#9b59d0'],    # Purple for negative correlation
+        [0.2, '#6b46c1'],    # Darker purple
+        [0.4, '#2a1e25'],    # Dark center
+        [0.6, '#92400e'],    # Brown-gold transition
+        [0.8, '#fbbf24'],    # Golden yellow
+        [1.0, '#FFD700']     # Bright gold for positive correlation
+    ]
+    
+    # Create heatmap
     fig = go.Figure(data=go.Heatmap(
         z=correlation_matrix.values,
-        x=correlation_matrix.columns,
-        y=correlation_matrix.columns,
-        colorscale=[[0, '#9b59d0'], [0.5, '#2a1e25'], [1, '#fbbf24']],
+        x=correlation_matrix.columns.tolist(),
+        y=correlation_matrix.columns.tolist(),
+        colorscale=colorscale,
+        zmin=-1,
+        zmax=1,
         text=np.around(correlation_matrix.values, decimals=2),
         texttemplate="%{text}",
-        textfont={"size": 12, "color": "white", "family": "Arial Black"},
+        textfont={"size": 14, "color": "white", "family": "Arial Black"},
         hoverongaps=False,
         colorbar=dict(
-            title=dict(text="Correlation", font=dict(color='#ffffff', size=14, family='Arial Black')),
-            tickfont=dict(color='#ffffff', size=12, family='Arial Black')
-        )
+            title=dict(text="Correlation Coefficient", font=dict(color='#ffffff', size=14, family='Arial Black')),
+            tickfont=dict(color='#ffffff', size=12, family='Arial Black'),
+            thickness=20,
+            len=0.8
+        ),
+        showscale=True
     ))
     
     fig.update_layout(
         title=dict(text="Feature Correlation Matrix", font=dict(color='#ffffff', size=18, family='Arial Black')),
-        height=480,
-        width=550,
+        height=500,
+        width=600,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
         font=dict(color='#ffffff', size=13, family='Arial Black'),
         xaxis=dict(
+            title="",
             color='#ffffff',
             tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
-            side='bottom'
+            side='bottom',
+            tickangle=45
         ),
         yaxis=dict(
+            title="",
             color='#ffffff',
             tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
             autorange='reversed'
         ),
-        margin=dict(l=100, r=100, t=80, b=60)
+        margin=dict(l=120, r=80, t=80, b=100)
     )
     
     return fig
