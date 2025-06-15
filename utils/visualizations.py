@@ -17,8 +17,8 @@ def create_cluster_visualization(df_clustered, features):
     Returns:
         plotly.graph_objects.Figure: Cluster visualization
     """
-    # Dark-toned colorful palette
-    dark_colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#F0A500', '#74B9FF']
+    # Golden and purple theme palette
+    theme_colors = ['#9b59d0', '#fbbf24', '#b983e0', '#fcd34d', '#7c3aed', '#f59e0b', '#c084fc', '#fde047']
     
     # Ensure we have the data and cluster column
     if df_clustered is None or df_clustered.empty:
@@ -47,7 +47,7 @@ def create_cluster_visualization(df_clustered, features):
         y=features[1],
         color='Cluster',
         title=f'Customer Clusters: {features[0]} vs {features[1]}',
-        color_discrete_sequence=dark_colors,
+        color_discrete_sequence=theme_colors,
         opacity=0.8
     )
     

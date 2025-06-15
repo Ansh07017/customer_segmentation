@@ -314,15 +314,15 @@ def api_perform_clustering():
             else:
                 cluster_labels.append(f"Cluster {i} ({cluster_counts[i]} customers)")
         
-        # Dark-toned colorful palette
-        dark_colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#F0A500', '#74B9FF']
+        # Golden and purple theme palette
+        theme_colors = ['#9b59d0', '#fbbf24', '#b983e0', '#fcd34d', '#7c3aed', '#f59e0b', '#c084fc', '#fde047']
         
         # Enhanced Pie chart with meaningful labels
         pie_fig = px.pie(
             values=cluster_counts.values,
             names=cluster_labels,
             title="Customer Segment Distribution",
-            color_discrete_sequence=dark_colors
+            color_discrete_sequence=theme_colors
         )
         
         pie_fig.update_layout(
@@ -348,8 +348,8 @@ def api_perform_clustering():
             x=bar_labels,
             y=cluster_counts.values,
             title="Customer Segment Sizes",
-            color=cluster_counts.values,
-            color_continuous_scale=px.colors.sequential.Viridis,
+            color=bar_labels,
+            color_discrete_sequence=theme_colors,
             text=[f"{count}<br>({pct:.1f}%)" for count, pct in zip(cluster_counts.values, percentages)]
         )
         
@@ -413,10 +413,10 @@ def api_perform_clustering():
                 theta=feature_labels,
                 fill='toself',
                 name=f'Segment {cluster_id + 1}',
-                line=dict(color=dark_colors[idx % len(dark_colors)], width=4),
-                fillcolor=dark_colors[idx % len(dark_colors)],
+                line=dict(color=theme_colors[idx % len(theme_colors)], width=4),
+                fillcolor=theme_colors[idx % len(theme_colors)],
                 opacity=0.7,
-                marker=dict(size=8, color=dark_colors[idx % len(dark_colors)])
+                marker=dict(size=8, color=theme_colors[idx % len(theme_colors)])
             ))
         
         radar_fig.update_layout(
@@ -451,13 +451,13 @@ def api_perform_clustering():
             margin=dict(l=60, r=60, t=80, b=60)
         )
         
-        # Create feature importance chart
+        # Create feature importance chart with golden-purple gradient
         feature_importance_fig = px.bar(
             x=features,
             y=[clustering_results['df_clustered'][feature].std() for feature in features],
             title="Feature Variation Across Clusters",
-            color=[clustering_results['df_clustered'][feature].std() for feature in features],
-            color_continuous_scale=px.colors.sequential.Plasma,
+            color=features,
+            color_discrete_sequence=['#9b59d0', '#fbbf24', '#b983e0', '#fcd34d'],
             text=[f"{clustering_results['df_clustered'][feature].std():.1f}" for feature in features]
         )
         
