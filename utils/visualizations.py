@@ -149,8 +149,7 @@ def create_correlation_heatmap(df):
         textfont={"size": 12, "color": "white", "family": "Arial Black"},
         hoverongaps=False,
         colorbar=dict(
-            title="Correlation",
-            titlefont=dict(color='#ffffff', size=14, family='Arial Black'),
+            title=dict(text="Correlation", font=dict(color='#ffffff', size=14, family='Arial Black')),
             tickfont=dict(color='#ffffff', size=12, family='Arial Black')
         )
     ))
