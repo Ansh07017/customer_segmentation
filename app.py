@@ -346,11 +346,18 @@ def api_perform_clustering():
         
         bar_fig = px.bar(
             x=bar_labels,
-            y=cluster_counts.values,
+            y=list(cluster_counts.values()),
             title="Customer Segment Sizes",
-            color=bar_labels,
-            color_discrete_sequence=theme_colors,
             text=[f"{count}<br>({pct:.1f}%)" for count, pct in zip(cluster_counts.values, percentages)]
+        )
+        
+        # Update bar colors manually to ensure visibility
+        bar_fig.update_traces(
+            marker_color=theme_colors[:len(bar_labels)],
+            marker_line_color='white',
+            marker_line_width=2,
+            textposition='outside',
+            textfont=dict(size=14, color='white', family='Arial Black')
         )
         
         bar_fig.update_layout(
@@ -452,13 +459,21 @@ def api_perform_clustering():
         )
         
         # Create feature importance chart with golden-purple gradient
+        std_values = [clustering_results['df_clustered'][feature].std() for feature in features]
         feature_importance_fig = px.bar(
             x=features,
-            y=[clustering_results['df_clustered'][feature].std() for feature in features],
+            y=std_values,
             title="Feature Variation Across Clusters",
-            color=features,
-            color_discrete_sequence=['#9b59d0', '#fbbf24', '#b983e0', '#fcd34d'],
-            text=[f"{clustering_results['df_clustered'][feature].std():.1f}" for feature in features]
+            text=[f"{val:.1f}" for val in std_values]
+        )
+        
+        # Update bar colors and styling manually
+        feature_importance_fig.update_traces(
+            marker_color=['#9b59d0', '#fbbf24', '#b983e0', '#fcd34d'][:len(features)],
+            marker_line_color='white',
+            marker_line_width=2,
+            textposition='outside',
+            textfont=dict(size=14, color='white', family='Arial Black')
         )
         
         feature_importance_fig.update_layout(
