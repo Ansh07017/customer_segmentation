@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Shopper Insights with K-Means
 
 *"Your customers have patterns. We make them visible."*
@@ -174,3 +175,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 *Built with ❤️ for data-driven business insights*
+=======
+# customer_segmentation
+>>>>>>> e6a7532ed6ce4143dc373de7cf5b31042537dcd9
