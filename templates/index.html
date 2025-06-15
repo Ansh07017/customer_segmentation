@@ -1318,6 +1318,27 @@
 
             function displayClassificationResult(response) {
                 const result = response.prediction;
+                
+                // Create detailed characteristics section
+                let detailedCharacteristics = '';
+                if (result.detailed_characteristics && result.detailed_characteristics.length > 0) {
+                    detailedCharacteristics = result.detailed_characteristics.map(characteristic => 
+                        `<li style="margin-bottom: 8px; color: #444;">${characteristic}</li>`
+                    ).join('');
+                } else {
+                    detailedCharacteristics = `<li style="color: #444;">${result.characteristics}</li>`;
+                }
+                
+                // Create detailed strategies section
+                let detailedStrategies = '';
+                if (result.detailed_strategies && result.detailed_strategies.length > 0) {
+                    detailedStrategies = result.detailed_strategies.map(strategy => 
+                        `<li style="margin-bottom: 8px; color: #444;">${strategy}</li>`
+                    ).join('');
+                } else {
+                    detailedStrategies = `<li style="color: #444;">${result.strategy}</li>`;
+                }
+                
                 const content = `
                     <div class="card classification-result">
                         <div class="card-header">
@@ -1331,20 +1352,55 @@
                                 </div>
                             </div>
                             <hr style="border-color: var(--gold);">
-                            <div class="row">
-                                <div class="col-12 mb-3">
-                                    <h6 style="color: var(--primary-purple);"><strong>Customer Profile</strong></h6>
-                                    <p style="color: var(--dark-purple); font-weight: 500;">${result.profile}</p>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <h6 style="color: var(--primary-purple);"><strong>Key Characteristics</strong></h6>
-                                    <p style="color: #333;">${result.characteristics}</p>
-                                </div>
-                                <div class="col-12">
-                                    <h6 style="color: var(--primary-purple);"><strong>Recommended Marketing Strategy</strong></h6>
-                                    <p style="color: #333; font-style: italic;">${result.strategy}</p>
+                            
+                            <!-- Customer Profile -->
+                            <div class="mb-4">
+                                <h6 style="color: var(--primary-purple);"><strong>Customer Profile</strong></h6>
+                                <p style="color: var(--dark-purple); font-weight: 500; font-size: 1.1em;">${result.profile}</p>
+                            </div>
+                            
+                            <!-- Key Characteristics -->
+                            <div class="mb-4">
+                                <h6 style="color: var(--primary-purple);"><strong>Key Characteristics</strong></h6>
+                                <ul style="padding-left: 20px; margin-bottom: 0;">
+                                    ${detailedCharacteristics}
+                                </ul>
+                            </div>
+                            
+                            <!-- Recommended Marketing Strategy -->
+                            <div class="mb-3">
+                                <h6 style="color: var(--primary-purple);"><strong>Recommended Marketing Strategy</strong></h6>
+                                <ul style="padding-left: 20px; margin-bottom: 0;">
+                                    ${detailedStrategies}
+                                </ul>
+                            </div>
+                            
+                            <!-- Key Metrics Summary -->
+                            ${result.key_metrics ? `
+                            <div class="mt-4 p-3" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; border-left: 4px solid var(--gold);">
+                                <h6 style="color: var(--dark-purple); margin-bottom: 15px;"><strong>Customer Metrics Summary</strong></h6>
+                                <div class="row text-center">
+                                    ${result.key_metrics.age ? `
+                                    <div class="col-md-4">
+                                        <div style="color: var(--primary-purple); font-size: 1.5em; font-weight: bold;">${result.key_metrics.age.toFixed(0)}</div>
+                                        <div style="color: #666; font-size: 0.9em;">Years Old</div>
+                                    </div>
+                                    ` : ''}
+                                    ${result.key_metrics.income ? `
+                                    <div class="col-md-4">
+                                        <div style="color: var(--primary-purple); font-size: 1.5em; font-weight: bold;">$${result.key_metrics.income.toFixed(0)}k</div>
+                                        <div style="color: #666; font-size: 0.9em;">Annual Income</div>
+                                    </div>
+                                    ` : ''}
+                                    ${result.key_metrics.spending ? `
+                                    <div class="col-md-4">
+                                        <div style="color: var(--primary-purple); font-size: 1.5em; font-weight: bold;">${result.key_metrics.spending.toFixed(0)}/100</div>
+                                        <div style="color: #666; font-size: 0.9em;">Spending Score</div>
+                                    </div>
+                                    ` : ''}
                                 </div>
                             </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;

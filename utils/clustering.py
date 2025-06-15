@@ -96,6 +96,9 @@ def get_cluster_insights(df_clustered, features):
         # Calculate cluster characteristics
         characteristics = []
         strategy = []
+        age_group = "Unknown"
+        income_level = "Unknown"
+        spending_level = "Unknown"
         
         # Age analysis
         if 'Age' in features:
@@ -169,12 +172,121 @@ def get_cluster_insights(df_clustered, features):
         
         profile = " ".join(profile_parts) if profile_parts else f"Cluster {cluster_id}"
         
+        # Generate detailed key characteristics
+        detailed_characteristics = []
+        
+        if 'Age' in features:
+            avg_age = cluster_data['Age'].mean()
+            age_std = cluster_data['Age'].std()
+            detailed_characteristics.append(f"Average age: {avg_age:.1f} years (±{age_std:.1f})")
+            
+        if 'Annual Income (k$)' in features:
+            avg_income = cluster_data['Annual Income (k$)'].mean()
+            income_std = cluster_data['Annual Income (k$)'].std()
+            detailed_characteristics.append(f"Average income: ${avg_income:.1f}k annually (±${income_std:.1f}k)")
+            
+        if 'Spending Score (1-100)' in features:
+            avg_spending = cluster_data['Spending Score (1-100)'].mean()
+            spending_std = cluster_data['Spending Score (1-100)'].std()
+            detailed_characteristics.append(f"Spending score: {avg_spending:.1f}/100 (±{spending_std:.1f})")
+        
+        if 'Genre' in df_clustered.columns:
+            gender_dist = cluster_data['Genre'].value_counts()
+            gender_breakdown = ", ".join([f"{gender}: {count} ({count/cluster_size*100:.1f}%)" 
+                                        for gender, count in gender_dist.items()])
+            detailed_characteristics.append(f"Gender distribution: {gender_breakdown}")
+        
+        # Generate comprehensive marketing strategies
+        detailed_strategies = []
+        
+        # Age-based strategies
+        if 'Age' in features:
+            avg_age = cluster_data['Age'].mean()
+            if avg_age < 30:
+                detailed_strategies.extend([
+                    "Digital-first marketing: Focus on social media platforms (Instagram, TikTok, Snapchat)",
+                    "Mobile optimization: Ensure seamless mobile shopping experience",
+                    "Trendy products: Emphasize latest fashion, technology, and lifestyle trends",
+                    "Influencer partnerships: Collaborate with young influencers and micro-influencers"
+                ])
+            elif avg_age < 50:
+                detailed_strategies.extend([
+                    "Family-focused messaging: Highlight family benefits and value propositions",
+                    "Multi-channel approach: Combine digital and traditional marketing channels",
+                    "Quality emphasis: Stress product durability and long-term value",
+                    "Convenience features: Promote time-saving and efficiency benefits"
+                ])
+            else:
+                detailed_strategies.extend([
+                    "Trust-building: Emphasize brand heritage, reliability, and customer service",
+                    "Traditional channels: Utilize email, print, and direct mail marketing",
+                    "Premium positioning: Focus on quality, craftsmanship, and exclusivity",
+                    "Personal service: Offer dedicated support and consultation services"
+                ])
+        
+        # Income-based strategies
+        if 'Annual Income (k$)' in features:
+            avg_income = cluster_data['Annual Income (k$)'].mean()
+            if avg_income < 40:
+                detailed_strategies.extend([
+                    "Value pricing: Offer competitive prices and budget-friendly options",
+                    "Payment flexibility: Provide installment plans and financing options",
+                    "Discount programs: Create loyalty rewards and seasonal promotions",
+                    "Essential products: Focus on necessary items rather than luxury goods"
+                ])
+            elif avg_income < 80:
+                detailed_strategies.extend([
+                    "Balanced approach: Mix of value and premium offerings",
+                    "Seasonal campaigns: Target specific occasions and holidays",
+                    "Bundle deals: Create attractive package offers and combos",
+                    "Quality-price balance: Emphasize good value for money"
+                ])
+            else:
+                detailed_strategies.extend([
+                    "Premium positioning: Highlight luxury, exclusivity, and status",
+                    "Personalized service: Offer VIP treatment and custom solutions",
+                    "High-end products: Focus on premium brands and luxury items",
+                    "Exclusive access: Provide early access to new products and special events"
+                ])
+        
+        # Spending-based strategies
+        if 'Spending Score (1-100)' in features:
+            avg_spending = cluster_data['Spending Score (1-100)'].mean()
+            if avg_spending < 35:
+                detailed_strategies.extend([
+                    "Incentive programs: Implement strong loyalty rewards and cashback offers",
+                    "Educational content: Show value and benefits of products",
+                    "Limited-time offers: Create urgency with flash sales and time-limited deals",
+                    "Free trials: Offer risk-free product testing opportunities"
+                ])
+            elif avg_spending < 65:
+                detailed_strategies.extend([
+                    "Regular engagement: Maintain consistent communication and touchpoints",
+                    "Seasonal promotions: Align offers with shopping seasons and holidays",
+                    "Cross-selling: Recommend complementary products and services",
+                    "Feedback loops: Gather insights to improve product offerings"
+                ])
+            else:
+                detailed_strategies.extend([
+                    "Premium experiences: Offer exclusive events and VIP shopping experiences",
+                    "Early access: Provide first access to new collections and limited editions",
+                    "Personalization: Deliver tailored recommendations and custom products",
+                    "Concierge services: Offer personal shopping assistance and styling services"
+                ])
+        
         insights[cluster_id] = {
             'profile': profile,
             'size': cluster_size,
             'percentage': cluster_percentage,
             'characteristics': "; ".join(characteristics),
-            'strategy': "; ".join(strategy)
+            'strategy': "; ".join(strategy),
+            'detailed_characteristics': detailed_characteristics,
+            'detailed_strategies': detailed_strategies,
+            'key_metrics': {
+                'age': cluster_data['Age'].mean() if 'Age' in features else None,
+                'income': cluster_data['Annual Income (k$)'].mean() if 'Annual Income (k$)' in features else None,
+                'spending': cluster_data['Spending Score (1-100)'].mean() if 'Spending Score (1-100)' in features else None
+            }
         }
     
     return insights

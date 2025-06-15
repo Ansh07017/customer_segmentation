@@ -783,6 +783,9 @@ def classify_customer():
                 'profile': cluster_insight.get('profile', f'Cluster {predicted_cluster}'),
                 'characteristics': cluster_insight.get('characteristics', 'No characteristics available'),
                 'strategy': cluster_insight.get('strategy', 'No strategy available'),
+                'detailed_characteristics': cluster_insight.get('detailed_characteristics', []),
+                'detailed_strategies': cluster_insight.get('detailed_strategies', []),
+                'key_metrics': cluster_insight.get('key_metrics', {}),
                 'probabilities': {f'Cluster {i}': float(prob) for i, prob in enumerate(prediction_proba)}
             }
         })
