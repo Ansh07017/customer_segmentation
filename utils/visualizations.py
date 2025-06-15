@@ -120,10 +120,13 @@ def create_correlation_heatmap(df):
     Returns:
         plotly.graph_objects.Figure: Correlation heatmap
     """
-    # Select only numerical columns
-    numerical_cols = df.select_dtypes(include=[np.number]).columns
+    # Select specific numerical columns for correlation analysis
+    numerical_cols = ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
     
-    if len(numerical_cols) < 2:
+    # Filter to only columns that exist in the dataframe
+    available_cols = [col for col in numerical_cols if col in df.columns]
+    
+    if len(available_cols) < 2:
         # Create a simple message figure if not enough numerical columns
         fig = go.Figure()
         fig.add_annotation(
@@ -131,12 +134,16 @@ def create_correlation_heatmap(df):
             xref="paper", yref="paper",
             x=0.5, y=0.5, xanchor='center', yanchor='middle',
             showarrow=False,
-            font=dict(size=16)
+            font=dict(size=16, color='white')
+        )
+        fig.update_layout(
+            plot_bgcolor='rgba(26, 22, 37, 0.8)',
+            paper_bgcolor='rgba(26, 22, 37, 0.8)'
         )
         return fig
     
     # Calculate correlation matrix
-    correlation_matrix = df[numerical_cols].corr()
+    correlation_matrix = df[available_cols].corr()
     
     # Create heatmap using go.Heatmap for better control
     fig = go.Figure(data=go.Heatmap(
