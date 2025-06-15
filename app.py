@@ -300,7 +300,13 @@ def api_perform_clustering():
         insights = get_cluster_insights(clustering_results['df_clustered'], features)
         
         # Create visualization
-        cluster_viz = create_cluster_visualization(clustering_results['df_clustered'], features)
+        try:
+            cluster_viz = create_cluster_visualization(clustering_results['df_clustered'], features)
+        except Exception as viz_error:
+            print(f"Visualization error: {viz_error}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'success': False, 'error': f'Visualization error: {str(viz_error)}'})
         
         # Cluster distribution
         cluster_counts = clustering_results['df_clustered']['Cluster'].value_counts().sort_index()
