@@ -130,8 +130,8 @@ def create_correlation_heatmap(df):
     # Calculate correlation matrix using pandas corr()
     corr_matrix = numeric_df.corr()
     
-    # Get values and labels
-    z_values = corr_matrix.values
+    # Convert to basic Python lists to ensure compatibility
+    z_values = corr_matrix.values.tolist()
     x_labels = corr_matrix.columns.tolist()
     y_labels = corr_matrix.index.tolist()
     
