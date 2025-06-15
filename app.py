@@ -346,7 +346,7 @@ def api_perform_clustering():
         
         bar_fig = px.bar(
             x=bar_labels,
-            y=list(cluster_counts.values()),
+            y=list(cluster_counts.values),
             title="Customer Segment Sizes",
             text=[f"{count}<br>({pct:.1f}%)" for count, pct in zip(cluster_counts.values, percentages)]
         )
@@ -535,6 +535,10 @@ def api_perform_clustering():
             'results': json_results
         })
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
+        print(f"CLUSTERING ERROR: {e}")
+        print(f"FULL TRACEBACK:\n{error_traceback}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/get_cluster_analysis')
