@@ -47,8 +47,8 @@ def create_cluster_visualization(df_clustered, features):
             size_max=10
         )
         
-        # Enhance markers
-        fig.update_traces(marker=dict(size=8, line=dict(width=1, color='white')))
+        # Enhance markers for better visibility
+        fig.update_traces(marker=dict(size=10, line=dict(width=2, color='white')))
         
         # Add cluster centers
         centroids = df_clustered.groupby('Cluster')[features].mean().reset_index()
@@ -107,31 +107,37 @@ def create_cluster_visualization(df_clustered, features):
             color_continuous_scale=px.colors.qualitative.Dark24
         )
     
-    # Apply dark theme with colorful accents - optimized for page fit
+    # Apply dark theme with enhanced visibility
     fig.update_layout(
-        height=450,
+        height=500,
         showlegend=True,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
-        title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+        font=dict(color='#ffffff', size=13, family='Arial Black'),
+        title=dict(font=dict(color='#ffffff', size=18, family='Arial Black')),
         xaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+            tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+            linewidth=2,
+            linecolor='#ffffff'
         ),
         yaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+            tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+            linewidth=2,
+            linecolor='#ffffff'
         ),
         legend=dict(
-            font=dict(color='#ffffff', size=10), 
+            font=dict(color='#ffffff', size=12, family='Arial Black'), 
             bgcolor='rgba(42, 31, 61, 0.9)',
-            bordercolor='rgba(111, 66, 193, 0.3)',
-            borderwidth=1
+            bordercolor='rgba(255, 255, 255, 0.5)',
+            borderwidth=2
         ),
-        margin=dict(l=50, r=50, t=60, b=50)
+        margin=dict(l=70, r=70, t=80, b=60)
     )
     
     return fig

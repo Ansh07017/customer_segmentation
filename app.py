@@ -354,27 +354,37 @@ def api_perform_clustering():
         )
         
         bar_fig.update_layout(
-            height=400,
+            height=450,
             plot_bgcolor='rgba(26, 22, 37, 0.8)',
             paper_bgcolor='rgba(26, 22, 37, 0.8)',
-            font=dict(color='#f3f4f6', size=11),
-            title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+            font=dict(color='#ffffff', size=13, family='Arial Black'),
+            title=dict(font=dict(color='#ffffff', size=18, family='Arial Black')),
             xaxis=dict(
-                gridcolor='rgba(111, 66, 193, 0.2)', 
+                gridcolor='rgba(255, 255, 255, 0.3)', 
                 color='#ffffff',
-                title_font=dict(color='#ffffff', size=12)
+                title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+                tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+                linewidth=2,
+                linecolor='#ffffff'
             ),
             yaxis=dict(
-                gridcolor='rgba(111, 66, 193, 0.2)', 
+                gridcolor='rgba(255, 255, 255, 0.3)', 
                 color='#ffffff', 
                 title='Number of Customers',
-                title_font=dict(color='#ffffff', size=12)
+                title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+                tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+                linewidth=2,
+                linecolor='#ffffff'
             ),
             showlegend=False,
-            margin=dict(l=50, r=50, t=60, b=50)
+            margin=dict(l=70, r=50, t=80, b=60)
         )
         
-        bar_fig.update_traces(textposition='inside', textfont_color='white')
+        bar_fig.update_traces(
+            textposition='inside', 
+            textfont=dict(color='white', size=14, family='Arial Black'),
+            marker=dict(line=dict(color='white', width=2))
+        )
         
         # Create cluster comparison chart showing feature averages
         cluster_stats = clustering_results['df_clustered'].groupby('Cluster')[features].mean().reset_index()
@@ -403,35 +413,42 @@ def api_perform_clustering():
                 theta=feature_labels,
                 fill='toself',
                 name=f'Segment {cluster_id + 1}',
-                line_color=dark_colors[idx % len(dark_colors)],
+                line=dict(color=dark_colors[idx % len(dark_colors)], width=4),
                 fillcolor=dark_colors[idx % len(dark_colors)],
-                opacity=0.6
+                opacity=0.7,
+                marker=dict(size=8, color=dark_colors[idx % len(dark_colors)])
             ))
         
         radar_fig.update_layout(
-            height=450,
+            height=500,
             polar=dict(
                 radialaxis=dict(
                     visible=True,
                     range=[0, 100],
                     color='#ffffff',
-                    gridcolor='rgba(111, 66, 193, 0.3)'
+                    gridcolor='rgba(255, 255, 255, 0.4)',
+                    linewidth=2,
+                    tickfont=dict(size=12, color='#ffffff')
                 ),
-                angularaxis=dict(color='#ffffff'),
-                bgcolor='rgba(26, 22, 37, 0.5)'
+                angularaxis=dict(
+                    color='#ffffff',
+                    linewidth=2,
+                    tickfont=dict(size=13, color='#ffffff', family='Arial Black')
+                ),
+                bgcolor='rgba(26, 22, 37, 0.3)'
             ),
             showlegend=True,
             plot_bgcolor='rgba(26, 22, 37, 0.8)',
             paper_bgcolor='rgba(26, 22, 37, 0.8)',
-            font=dict(color='#f3f4f6', size=11),
-            title=dict(text="Customer Segment Profiles", font=dict(color='#ffffff', size=15, family='Arial Black')),
+            font=dict(color='#ffffff', size=13, family='Arial Black'),
+            title=dict(text="Customer Segment Profiles", font=dict(color='#ffffff', size=18, family='Arial Black')),
             legend=dict(
-                font=dict(color='#ffffff', size=10), 
+                font=dict(color='#ffffff', size=12, family='Arial Black'), 
                 bgcolor='rgba(42, 31, 61, 0.9)',
-                bordercolor='rgba(111, 66, 193, 0.3)',
-                borderwidth=1
+                bordercolor='rgba(255, 255, 255, 0.5)',
+                borderwidth=2
             ),
-            margin=dict(l=40, r=40, t=60, b=40)
+            margin=dict(l=60, r=60, t=80, b=60)
         )
         
         # Create feature importance chart
@@ -445,27 +462,37 @@ def api_perform_clustering():
         )
         
         feature_importance_fig.update_layout(
-            height=400,
+            height=450,
             plot_bgcolor='rgba(26, 22, 37, 0.8)',
             paper_bgcolor='rgba(26, 22, 37, 0.8)',
-            font=dict(color='#f3f4f6', size=11),
-            title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
+            font=dict(color='#ffffff', size=13, family='Arial Black'),
+            title=dict(font=dict(color='#ffffff', size=18, family='Arial Black')),
             xaxis=dict(
-                gridcolor='rgba(111, 66, 193, 0.2)', 
+                gridcolor='rgba(255, 255, 255, 0.3)', 
                 color='#ffffff',
-                title_font=dict(color='#ffffff', size=12)
+                title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+                tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+                linewidth=2,
+                linecolor='#ffffff'
             ),
             yaxis=dict(
-                gridcolor='rgba(111, 66, 193, 0.2)', 
+                gridcolor='rgba(255, 255, 255, 0.3)', 
                 color='#ffffff', 
                 title='Standard Deviation',
-                title_font=dict(color='#ffffff', size=12)
+                title_font=dict(color='#ffffff', size=14, family='Arial Black'),
+                tickfont=dict(size=12, color='#ffffff', family='Arial Black'),
+                linewidth=2,
+                linecolor='#ffffff'
             ),
             showlegend=False,
-            margin=dict(l=50, r=50, t=60, b=50)
+            margin=dict(l=70, r=50, t=80, b=60)
         )
         
-        feature_importance_fig.update_traces(textposition='outside', textfont_color='white')
+        feature_importance_fig.update_traces(
+            textposition='outside', 
+            textfont=dict(color='white', size=14, family='Arial Black'),
+            marker=dict(line=dict(color='white', width=2))
+        )
         
         return jsonify({
             'success': True,
