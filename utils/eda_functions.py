@@ -51,7 +51,7 @@ def create_age_distribution(df):
         nbins=20,
         title='Age Distribution of Customers',
         labels={'Age': 'Age (years)', 'count': 'Number of Customers'},
-        color_discrete_sequence=['#FF6B6B']
+        color_discrete_sequence=['#9b59d0']  # Purple theme
     )
     
     # Add mean line
@@ -59,9 +59,10 @@ def create_age_distribution(df):
     fig.add_vline(
         x=mean_age, 
         line_dash="dash", 
-        line_color="#FFEAA7",
+        line_color="#FFD700",  # Golden color
         annotation_text=f"Mean: {mean_age:.1f}",
-        annotation_position="top"
+        annotation_position="top",
+        annotation_font=dict(color='#FFD700', size=12, family='Arial Black')
     )
     
     fig.update_layout(
@@ -69,17 +70,19 @@ def create_age_distribution(df):
         height=380,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
+        font=dict(color='#ffffff', size=11, family='Arial Black'),
         title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
         xaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         yaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         margin=dict(l=50, r=50, t=60, b=50)
     )
@@ -94,7 +97,7 @@ def create_income_distribution(df):
         nbins=20,
         title='Annual Income Distribution',
         labels={'Annual Income (k$)': 'Annual Income (k$)', 'count': 'Number of Customers'},
-        color_discrete_sequence=['#4ECDC4']
+        color_discrete_sequence=['#fbbf24']  # Golden theme
     )
     
     # Add mean line
@@ -102,9 +105,10 @@ def create_income_distribution(df):
     fig.add_vline(
         x=mean_income, 
         line_dash="dash", 
-        line_color="#FFEAA7",
+        line_color="#9b59d0",  # Purple color
         annotation_text=f"Mean: ${mean_income:.1f}k",
-        annotation_position="top"
+        annotation_position="top",
+        annotation_font=dict(color='#9b59d0', size=12, family='Arial Black')
     )
     
     fig.update_layout(
@@ -112,17 +116,19 @@ def create_income_distribution(df):
         height=380,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
+        font=dict(color='#ffffff', size=11, family='Arial Black'),
         title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
         xaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         yaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         margin=dict(l=50, r=50, t=60, b=50)
     )
@@ -137,7 +143,7 @@ def create_spending_distribution(df):
         nbins=20,
         title='Spending Score Distribution',
         labels={'Spending Score (1-100)': 'Spending Score', 'count': 'Number of Customers'},
-        color_discrete_sequence=['#45B7D1']
+        color_discrete_sequence=['#b983e0']  # Light purple theme
     )
     
     # Add mean line
@@ -145,9 +151,10 @@ def create_spending_distribution(df):
     fig.add_vline(
         x=mean_spending, 
         line_dash="dash", 
-        line_color="#FFEAA7",
+        line_color="#FFD700",  # Golden color
         annotation_text=f"Mean: {mean_spending:.1f}",
-        annotation_position="top"
+        annotation_position="top",
+        annotation_font=dict(color='#FFD700', size=12, family='Arial Black')
     )
     
     fig.update_layout(
@@ -155,17 +162,19 @@ def create_spending_distribution(df):
         height=380,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
+        font=dict(color='#ffffff', size=11, family='Arial Black'),
         title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
         xaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         yaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         margin=dict(l=50, r=50, t=60, b=50)
     )
@@ -180,14 +189,14 @@ def create_gender_distribution(df):
         values=gender_counts.values,
         names=gender_counts.index,
         title='Gender Distribution',
-        color_discrete_sequence=['#FF6B6B', '#4ECDC4']
+        color_discrete_sequence=['#9b59d0', '#fbbf24']  # Purple and golden theme
     )
     
     fig.update_layout(
         height=550,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=12),
+        font=dict(color='#ffffff', size=12, family='Arial Black'),
         title=dict(font=dict(color='#ffffff', size=16, family='Arial Black')),
         margin=dict(l=60, r=60, t=80, b=60)
     )
@@ -202,7 +211,7 @@ def create_gender_income_analysis(df):
         y='Annual Income (k$)',
         title='Income Distribution by Gender',
         color='Genre',
-        color_discrete_sequence=['#FF6B6B', '#4ECDC4']
+        color_discrete_sequence=['#9b59d0', '#fbbf24']  # Purple and golden theme
     )
     
     fig.update_layout(
@@ -210,17 +219,19 @@ def create_gender_income_analysis(df):
         height=380,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
+        font=dict(color='#ffffff', size=11, family='Arial Black'),
         title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
         xaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         yaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         margin=dict(l=50, r=50, t=60, b=50)
     )
@@ -235,7 +246,7 @@ def create_gender_spending_analysis(df):
         y='Spending Score (1-100)',
         title='Spending Score Distribution by Gender',
         color='Genre',
-        color_discrete_sequence=['#45B7D1', '#96CEB4']
+        color_discrete_sequence=['#fbbf24', '#9b59d0']  # Golden and purple theme
     )
     
     fig.update_layout(
@@ -243,17 +254,19 @@ def create_gender_spending_analysis(df):
         height=380,
         plot_bgcolor='rgba(26, 22, 37, 0.8)',
         paper_bgcolor='rgba(26, 22, 37, 0.8)',
-        font=dict(color='#f3f4f6', size=11),
+        font=dict(color='#ffffff', size=11, family='Arial Black'),
         title=dict(font=dict(color='#ffffff', size=15, family='Arial Black')),
         xaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         yaxis=dict(
-            gridcolor='rgba(111, 66, 193, 0.2)', 
+            gridcolor='rgba(255, 255, 255, 0.3)', 
             color='#ffffff',
-            title_font=dict(color='#ffffff', size=12)
+            title_font=dict(color='#ffffff', size=12, family='Arial Black'),
+            tickfont=dict(color='#ffffff', family='Arial Black')
         ),
         margin=dict(l=50, r=50, t=60, b=50)
     )
