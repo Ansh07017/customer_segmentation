@@ -95,10 +95,10 @@ Using the Mall Customer Segmentation dataset (analyzing Age, Gender, Annual Inco
 
 ### 1. Clone the repository
 ```bash
-#### Step1: git clone <repository-url>
-#### Step2: cd shopper-insights-kmeans
-#### Step3: pip install flask flask-cors pandas numpy scikit-learn plotly matplotlib seaborn
-#### Step4: python app.py
+Step1: git clone <repository-url>
+Step2: cd shopper-insights-kmeans
+Step3: pip install flask flask-cors pandas numpy scikit-learn plotly matplotlib seaborn
+Step4: python app.py
 ```
 
 ### 🔧 REST API Endpoints
